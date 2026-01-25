@@ -1,4 +1,3 @@
-<script>
 // Мультиязычный пакет
 const T = {
     ru: {
@@ -80,66 +79,68 @@ function applyLang(lang) {
     localStorage.setItem("lang", lang);
     const t = T[lang];
 
-    title.textContent = t.title;
-    l1.textContent = t.l1;
-    l2.textContent = t.l2;
-    l3.textContent = t.l3;
-    l4.textContent = t.l4;
+    // Используем getElementById для надежности
+    document.getElementById('title').textContent = t.title;
+    document.getElementById('l1').textContent = t.l1;
+    document.getElementById('l2').textContent = t.l2;
+    document.getElementById('l3').textContent = t.l3;
+    document.getElementById('l4').textContent = t.l4;
 
-    E13.placeholder = t.ph1;
-    E14.placeholder = t.ph2;
-    E15.placeholder = t.ph3;
-    E16.placeholder = t.ph4;
+    document.getElementById('E13').placeholder = t.ph1;
+    document.getElementById('E14').placeholder = t.ph2;
+    document.getElementById('E15').placeholder = t.ph3;
+    document.getElementById('E16').placeholder = t.ph4;
 
-    calcBtn.textContent = t.calc;
-    copyBtn.textContent = t.copyBtn;
+    document.getElementById('calcBtn').textContent = t.calc;
+    document.getElementById('copyBtn').textContent = t.copyBtn;
 
     document.querySelectorAll(".lang-btn").forEach(btn =>
         btn.classList.toggle("active", btn.dataset.lang === lang)
     );
 }
 
-// Выбор вручную
+// Выбор языка вручную
 document.querySelectorAll(".lang-btn").forEach(btn => {
     btn.onclick = () => applyLang(btn.dataset.lang);
 });
 
-// Автоопределение Telegram
+// Автоопределение Telegram или сохраненного языка
 try {
-    const tgLang = Telegram?.WebApp?.initDataUnsafe?.user?.language_code?.slice(0,2);
-    if (tgLang && T[tgLang]) applyLang(tgLang);
-} catch {}
+    const tgLang = window.Telegram?.WebApp?.initDataUnsafe?.user?.language_code?.slice(0,2);
+    const savedLang = localStorage.getItem("lang");
+    const finalLang = (T[tgLang] ? tgLang : (savedLang || "ru"));
+    applyLang(finalLang);
+} catch {
+    applyLang(localStorage.getItem("lang") || "ru");
+}
 
-// Если нет saved language — включим русский
-applyLang(localStorage.getItem("lang") || "ru");
-
-// Глобальные переменные для хранения данных
 let lastResult = "";
 let lastCalculationData = {};
 
-// Расчёт
 function calculate() {
     let lang = localStorage.getItem("lang") || "ru";
     let t = T[lang];
 
-    let E13v = +E13.value;
-    let E14v = +E14.value;
-    let E15v = +E15.value;
-    let E16v = +E16.value;
+    let E13v = +document.getElementById('E13').value;
+    let E14v = +document.getElementById('E14').value;
+    let E15v = +document.getElementById('E15').value;
+    let E16v = +document.getElementById('E16').value;
+    const resElem = document.getElementById('result');
+    const copyBtn = document.getElementById('copyBtn');
 
     if (!E13v || !E14v || !E15v || !E16v) {
-        result.textContent = t.empty;
-        result.classList.add("show");
+        resElem.textContent = t.empty;
+        resElem.classList.add("show");
         copyBtn.style.display = "none";
         return;
     }
 
+    // Формула Voc при мин. температуре
     let VocCorr = E14v * (1 + (E15v - 25) * (E16v / 100));
     let count = Math.floor(E13v / VocCorr);
 
     lastResult = t.result + count;
     
-    // Сохраняем данные расчета
     lastCalculationData = {
         maxVoltage: E13v,
         moduleVoc: E14v,
@@ -150,24 +151,20 @@ function calculate() {
         lang: lang
     };
 
-    result.textContent = lastResult;
+    resElem.textContent = lastResult;
+    resElem.classList.remove("show");
+    setTimeout(() => resElem.classList.add("show"), 20);
 
-    // Анимация
-    result.classList.remove("show");
-    setTimeout(() => result.classList.add("show"), 20);
-
-    // Показать кнопку копирования
     copyBtn.style.display = "block";
     copyBtn.classList.remove("copied");
     copyBtn.textContent = t.copyBtn;
 }
 
-// Функция копирования в буфер обмена
 function copyToClipboard() {
     let lang = localStorage.getItem("lang") || "ru";
     let t = T[lang];
+    const copyBtn = document.getElementById('copyBtn');
     
-    // Формируем текст для копирования
     let textToCopy = ` ${t.title}\n\n`;
     textToCopy += `✅ ${t.l1}: ${lastCalculationData.maxVoltage} V\n`;
     textToCopy += `✅ ${t.l2}: ${lastCalculationData.moduleVoc} V\n`;
@@ -176,46 +173,4 @@ function copyToClipboard() {
     textToCopy += `${t.calculatedVoc}: ${lastCalculationData.calculatedVoc} V (${t.explanation})\n\n`;
     textToCopy += `📊 ${lastResult}`;
     
-    // Используем современный Clipboard API
-    navigator.clipboard.writeText(textToCopy).then(() => {
-        // Успешное копирование
-        copyBtn.textContent = t.copied;
-        copyBtn.classList.add("copied");
-        
-        // Возвращаем оригинальный текст через 2 секунды
-        setTimeout(() => {
-            copyBtn.textContent = t.copyBtn;
-            copyBtn.classList.remove("copied");
-        }, 2000);
-    }).catch(err => {
-        // Fallback для старых браузеров
-        console.error('Не удалось скопировать: ', err);
-        // Пытаемся использовать старый метод
-        const textArea = document.createElement('textarea');
-        textArea.value = textToCopy;
-        document.body.appendChild(textArea);
-        textArea.select();
-        try {
-            document.execCommand('copy');
-            copyBtn.textContent = t.copied;
-            copyBtn.classList.add("copied");
-            
-            setTimeout(() => {
-                copyBtn.textContent = t.copyBtn;
-                copyBtn.classList.remove("copied");
-            }, 2000);
-        } catch (err) {
-            alert('Не удалось скопировать. Пожалуйста, скопируйте результат вручную.');
-        }
-        document.body.removeChild(textArea);
-    });
-}
-function go(page) {
-  location.href = page;
-}
-
-
-// Назначаем обработчик для кнопки копирования
-document.getElementById('copyBtn').addEventListener('click', copyToClipboard);
-
-</script>
+    navigator.clipboard.write
