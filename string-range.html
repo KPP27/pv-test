@@ -99,14 +99,14 @@
             margin-top: 12px;
         }
 
-        label { font-size: 13px; display: block; color: #555; margin-bottom: 4px; }
+        label { font-size: 14px; display: block; color: #555; margin-bottom: 4px; }
 
         input {
             width: 100%;
-            padding: 10px;
+            padding: 12px;
             border-radius: 10px;
             border: 1px solid var(--border);
-            font-size: 15px;
+            font-size: 16px;
             box-sizing: border-box; 
             transition: 0.2s;
         }
@@ -177,37 +177,37 @@
 
     <div class="input-group">
         <label id="l1"></label>
-        <input type="number" id="v_voc" inputmode="decimal" placeholder="51.3">
+        <input type="number" id="v_voc" inputmode="decimal">
     </div>
 
     <div class="input-group">
         <label id="l2"></label>
-        <input type="number" id="v_vmp" inputmode="decimal" placeholder="42.7">
+        <input type="number" id="v_vmp" inputmode="decimal">
     </div>
 
     <div class="input-group">
         <label id="l3"></label>
-        <input type="number" id="kv" inputmode="decimal" placeholder="-0.23">
+        <input type="number" id="kv" inputmode="decimal">
     </div>
 
     <div class="input-group">
         <label id="l4"></label>
-        <input type="number" id="t_min" inputmode="decimal" placeholder="-25">
+        <input type="number" id="t_min" inputmode="decimal">
     </div>
 
     <div class="input-group">
         <label id="l5"></label>
-        <input type="number" id="t_max" inputmode="decimal" placeholder="30">
+        <input type="number" id="t_max" inputmode="decimal">
     </div>
 
     <div class="input-group">
         <label id="l6"></label>
-        <input type="number" id="v_mppt_max" inputmode="decimal" placeholder="500">
+        <input type="number" id="v_mppt_max" inputmode="decimal">
     </div>
 
     <div class="input-group">
         <label id="l7"></label>
-        <input type="number" id="v_mppt_min" inputmode="decimal" placeholder="125">
+        <input type="number" id="v_mppt_min" inputmode="decimal">
     </div>
 
     <button onclick="calculate()" id="calcBtn" class="calc-btn"></button>
@@ -221,46 +221,66 @@ const T = {
     ru: {
         m1: "🔌 Макс. стринг", m2: "📐 Мин/Макс модули",
         title: "📐 Оптимальное количество",
-        l1: "Voc модуля (STC)", l2: "Vmp модуля (STC)",
-        l3: "Темп. коэффициент Voc (%)", l4: "Мин. ожидаемая темп. (°C)",
-        l5: "Макс. ожидаемая темп. (°C)", l6: "Макс. диапазон MPPT инвертора",
-        l7: "Мин. диапазон MPPT инвертора", calc: "Рассчитать диапазон",
+        l1: "Напряжение холостого хода модуля (Voc)", 
+        l2: "Напряжение в точке макс. мощности модуля (Vmp)",
+        l3: "Температурный коэффициент Voc (%)", 
+        l4: "Минимальная температура на объекте (°C)",
+        l5: "Максимальная температура на объекте (°C)", 
+        l6: "Максимальный рабочий диапазон MPPT инвертора",
+        l7: "Минимальный рабочий диапазон MPPT инвертора", 
+        ph: "Например: ",
+        calc: "Рассчитать диапазон",
         empty: "⚠️ Заполните все поля", copyBtn: "📋 Скопировать результат",
         copied: "✅ Скопировано!",
-        res_min: "Минимальное количество в стринге",
+        res_min: "Минимальное количество фотомодулей в стринге",
         res_max: "максимальное", pcs: "шт."
     },
     ua: {
         m1: "🔌 Макс. стринг", m2: "📐 Мін/Макс модулі",
         title: "📐 Оптимальна кількість",
-        l1: "Voc модуля (STC)", l2: "Vmp модуля (STC)",
-        l3: "Темп. коефіцієнт Voc (%)", l4: "Мін. очікувана темп. (°C)",
-        l5: "Макс. очікувана темп. (°C)", l6: "Макс. діапазон MPPT інвертора",
-        l7: "Мін. діапазон MPPT інвертора", calc: "Розрахувати діапазон",
+        l1: "Напруга холостого ходу модуля (Voc)", 
+        l2: "Напруга в точці макс. потужності модуля (Vmp)",
+        l3: "Температурний коефіцієнт Voc (%)", 
+        l4: "Мінімальна температура на об'єкті (°C)",
+        l5: "Максимальна температура на об'єкті (°C)", 
+        l6: "Максимальний робочий діапазон MPPT інвертора",
+        l7: "Мінімальний робочий діапазон MPPT інвертора", 
+        ph: "Наприклад: ",
+        calc: "Розрахувати діапазон",
         empty: "⚠️ Заповніть всі поля", copyBtn: "📋 Копіювати результат",
         copied: "✅ Скопійовано!",
-        res_min: "Мінімальна кількість у стрингу",
+        res_min: "Мінімальна кількість фотомодулів у стрингу",
         res_max: "максимальна", pcs: "шт."
     },
     en: {
         m1: "🔌 Max String", m2: "📐 Min/Max Modules",
         title: "📐 Optimal Module Range",
-        l1: "Module Voc (STC)", l2: "Module Vmp (STC)",
-        l3: "Temp. coefficient Voc (%)", l4: "Min expected temp. (°C)",
-        l5: "Max expected temp. (°C)", l6: "Max MPPT voltage range",
-        l7: "Min MPPT voltage range", calc: "Calculate Range",
+        l1: "Module Open Circuit Voltage (Voc)", 
+        l2: "Module Max Power Voltage (Vmp)",
+        l3: "Temperature coefficient Voc (%)", 
+        l4: "Minimum ambient temperature (°C)",
+        l5: "Maximum ambient temperature (°C)", 
+        l6: "Maximum MPPT inverter voltage range",
+        l7: "Minimum MPPT inverter voltage range", 
+        ph: "Example: ",
+        calc: "Calculate Range",
         empty: "⚠️ Please fill all fields", copyBtn: "📋 Copy result",
         copied: "✅ Copied!",
-        res_min: "Minimum modules per string",
+        res_min: "Minimum number of modules in string",
         res_max: "maximum", pcs: "pcs."
     },
     pl: {
         m1: "🔌 Max string", m2: "📐 Min/Max moduły",
         title: "📐 Optymalna liczba modułów",
-        l1: "Voc modułu (STC)", l2: "Vmp modułu (STC)",
-        l3: "Współczynnik Voc (%)", l4: "Minimalna temp. (°C)",
-        l5: "Maksymalna temp. (°C)", l6: "Maksymalny zakres MPPT",
-        l7: "Minimalny zakres MPPT", calc: "Oblicz zakres",
+        l1: "Napięcie jałowe modułu (Voc)", 
+        l2: "Napięcie w punkcie mocy maks. modułu (Vmp)",
+        l3: "Współczynnik temperaturowy Voc (%)", 
+        l4: "Minimalna temperatura otoczenia (°C)",
+        l5: "Maksymalna temperatura otoczenia (°C)", 
+        l6: "Maksymalny zakres roboczy MPPT falownika",
+        l7: "Minimalny zakres roboczy MPPT falownika", 
+        ph: "Przykład: ",
+        calc: "Oblicz zakres",
         empty: "⚠️ Uzupełnij wszystkie pola", copyBtn: "📋 Skopiuj wynik",
         copied: "✅ Skopiowano!",
         res_min: "Minimalna liczba modułów w stringu",
@@ -283,6 +303,16 @@ function applyLang(lang) {
     document.getElementById('l5').textContent = t.l5;
     document.getElementById('l6').textContent = t.l6;
     document.getElementById('l7').textContent = t.l7;
+    
+    // Плейсхолдеры "Например"
+    document.getElementById('v_voc').placeholder = t.ph + "51.3";
+    document.getElementById('v_vmp').placeholder = t.ph + "42.7";
+    document.getElementById('kv').placeholder = t.ph + "-0.23";
+    document.getElementById('t_min').placeholder = t.ph + "-25";
+    document.getElementById('t_max').placeholder = t.ph + "30";
+    document.getElementById('v_mppt_max').placeholder = t.ph + "500";
+    document.getElementById('v_mppt_min').placeholder = t.ph + "125";
+
     document.getElementById('calcBtn').textContent = t.calc;
     document.getElementById('copyBtn').textContent = t.copyBtn;
     document.querySelectorAll(".lang-btn").forEach(btn => btn.classList.toggle("active", btn.dataset.lang === lang));
@@ -298,7 +328,6 @@ function calculate() {
     const lang = localStorage.getItem("lang") || "ru";
     const t = T[lang];
     
-    // Получение значений (адаптация формул из Excel)
     const v_voc = +document.getElementById('v_voc').value;
     const v_vmp = +document.getElementById('v_vmp').value;
     const kv = +document.getElementById('kv').value;
@@ -316,11 +345,8 @@ function calculate() {
         return;
     }
 
-    // РАСЧЕТ ПО ФОРМУЛЕ EXCEL
-    // Мин количество (основано на Vmp при макс температуре)
+    // Расчет по вашей формуле из Excel
     const min_pcs = Math.ceil(mppt_min / (v_vmp * (1 + (t_max - 25) * (kv / 100))));
-    
-    // Макс количество (основано на Voc при мин температуре)
     const max_pcs = Math.floor(mppt_max / (v_voc * (1 + (t_min - 25) * (kv / 100))));
 
     lastResultText = `${t.res_min}: ${min_pcs} ${t.pcs} и ${t.res_max} ${max_pcs} ${t.pcs}.`;
@@ -344,7 +370,7 @@ document.getElementById('copyBtn').onclick = function() {
     let fullText = `${t.title}\n\n`;
     fullText += `✅ Voc: ${v_voc} V | Vmp: ${v_vmp} V\n`;
     fullText += `✅ K'v: ${kv}% | t: ${t_min}°C / ${t_max}°C\n`;
-    fullText += `✅ MPPT: ${mppt_min} - ${mppt_max} V\n\n`;
+    fullText += `✅ MPPT Range: ${mppt_min} - ${mppt_max} V\n\n`;
     fullText += `📊 ${lastResultText}`;
 
     navigator.clipboard.writeText(fullText).then(() => {
