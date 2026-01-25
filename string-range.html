@@ -1,7 +1,7 @@
 const T = {
     ru: {
         m1: "🔌 Макс. стринг", m2: "📐 Мин/Макс модули",
-        title: "📐 Оптимальное количество",
+        title: "📐 Оптимальное количество фотомодулей в стринге",
         l1: "Напряжение холостого хода модуля (Voc)", 
         l2: "Напряжение в точке макс. мощности модуля (Vmp)",
         l3: "Температурный коэффициент Voc (%)", 
@@ -18,7 +18,7 @@ const T = {
     },
     ua: {
         m1: "🔌 Макс. стринг", m2: "📐 Мін/Макс модулі",
-        title: "📐 Оптимальна кількість",
+        title: "📐 Оптимальна кількість фотомодулів у стрингу",
         l1: "Напруга холостого ходу модуля (Voc)", 
         l2: "Напруга в точці макс. потужності модуля (Vmp)",
         l3: "Температурний коефіцієнт Voc (%)", 
@@ -35,7 +35,7 @@ const T = {
     },
     en: {
         m1: "🔌 Max String", m2: "📐 Min/Max Modules",
-        title: "📐 Optimal Module Range",
+        title: "📐 Optimal number of PV modules in string",
         l1: "Module Open Circuit Voltage (Voc)", 
         l2: "Module Max Power Voltage (Vmp)",
         l3: "Temperature coefficient Voc (%)", 
@@ -52,7 +52,7 @@ const T = {
     },
     pl: {
         m1: "🔌 Max string", m2: "📐 Min/Max moduły",
-        title: "📐 Optymalna liczba modułów",
+        title: "📐 Optymalna liczba modułów fotowoltaicznych w stringu",
         l1: "Napięcie jałowe modułu (Voc)", 
         l2: "Napięcie w punkcie mocy maks. modułu (Vmp)",
         l3: "Współczynnik temperaturowy Voc (%)", 
@@ -69,6 +69,8 @@ const T = {
     }
 };
 
+let lastCalcData = null;
+
 function applyLang(lang) {
     localStorage.setItem("lang", lang);
     const t = T[lang];
@@ -83,7 +85,6 @@ function applyLang(lang) {
     document.getElementById('l6').textContent = t.l6;
     document.getElementById('l7').textContent = t.l7;
     
-    // Обновленные плейсхолдеры согласно вашим замечаниям
     document.getElementById('v_voc').placeholder = t.ph + "41.5";
     document.getElementById('v_vmp').placeholder = t.ph + "42.7";
     document.getElementById('kv').placeholder = t.ph + "-0.29";
@@ -96,3 +97,80 @@ function applyLang(lang) {
     document.getElementById('copyBtn').textContent = t.copyBtn;
     document.querySelectorAll(".lang-btn").forEach(btn => btn.classList.toggle("active", btn.dataset.lang === lang));
 }
+
+document.querySelectorAll(".lang-btn").forEach(btn => {
+    btn.onclick = () => applyLang(btn.dataset.lang);
+});
+
+applyLang(localStorage.getItem("lang") || "ru");
+
+function calculate() {
+    const lang = localStorage.getItem("lang") || "ru";
+    const t = T[lang];
+    
+    const vals = {
+        v_voc: +document.getElementById('v_voc').value,
+        v_vmp: +document.getElementById('v_vmp').value,
+        kv: +document.getElementById('kv').value,
+        t_min: +document.getElementById('t_min').value,
+        t_max: +document.getElementById('t_max').value,
+        mppt_max: +document.getElementById('v_mppt_max').value,
+        mppt_min: +document.getElementById('v_mppt_min').value
+    };
+
+    const resDiv = document.getElementById('result');
+    const copyBtn = document.getElementById('copyBtn');
+
+    if (!vals.v_voc || !vals.v_vmp || !vals.kv || !vals.mppt_max || !vals.mppt_min) {
+        resDiv.textContent = t.empty;
+        resDiv.classList.add("show");
+        copyBtn.style.display = "none";
+        return;
+    }
+
+    const min_pcs = Math.ceil(vals.mppt_min / (vals.v_vmp * (1 + (vals.t_max - 25) * (vals.kv / 100))));
+    const max_pcs = Math.floor(vals.mppt_max / (vals.v_voc * (1 + (vals.t_min - 25) * (vals.kv / 100))));
+
+    const resultString = `${t.res_min}: ${min_pcs} ${t.pcs} и ${t.res_max} ${max_pcs} ${t.pcs}.`;
+    
+    // Сохраняем данные для копирования
+    lastCalcData = {
+        title: t.title,
+        inputs: [
+            { label: t.l1, val: vals.v_voc, unit: "V" },
+            { label: t.l2, val: vals.v_vmp, unit: "V" },
+            { label: t.l3, val: vals.kv, unit: "%" },
+            { label: t.l4, val: vals.t_min, unit: "°C" },
+            { label: t.l5, val: vals.t_max, unit: "°C" },
+            { label: t.l6, val: vals.mppt_max, unit: "V" },
+            { label: t.l7, val: vals.mppt_min, unit: "V" }
+        ],
+        result: resultString
+    };
+
+    resDiv.innerHTML = resultString;
+    resDiv.classList.remove("show");
+    setTimeout(() => resDiv.classList.add("show"), 20);
+    copyBtn.style.display = "block";
+}
+
+document.getElementById('copyBtn').onclick = function() {
+    if (!lastCalcData) return;
+    const t = T[localStorage.getItem("lang") || "ru"];
+    
+    let text = `${lastCalcData.title}\n\n`;
+    lastCalcData.inputs.forEach(item => {
+        text += `✅ ${item.label}: ${item.val} ${item.unit}\n`;
+    });
+    text += `\n📊 ${lastCalcData.result}`;
+
+    navigator.clipboard.writeText(text).then(() => {
+        const originalText = t.copyBtn;
+        this.textContent = t.copied;
+        this.classList.add("copied");
+        setTimeout(() => {
+            this.textContent = originalText;
+            this.classList.remove("copied");
+        }, 2000);
+    });
+};
