@@ -155,12 +155,12 @@
 
 <div class="container">
     <nav class="menu">
-        <button class="menu-btn active" onclick="location.href='index.html'">🔌 Макс. стринг</button>
-        <button class="menu-btn" onclick="location.href='string-range.html'">📐 Мин/Макс модули</button>
+        <button id="m1" class="menu-btn active" onclick="location.href='index.html'"></button>
+        <button id="m2" class="menu-btn" onclick="location.href='string-range.html'"></button>
     </nav>
 
     <div class="top-bar">
-        <h2 id="title">📟 Калькулятор</h2>
+        <h2 id="title"></h2>
         <div class="lang-switch">
             <div class="lang-btn" data-lang="ru">RU</div>
             <div class="lang-btn" data-lang="ua">UA</div>
@@ -170,16 +170,16 @@
     </div>
 
     <label id="l1"></label>
-    <input type="number" id="E13" inputmode="decimal" placeholder="...">
+    <input type="number" id="E13" inputmode="decimal">
 
     <label id="l2"></label>
-    <input type="number" id="E14" inputmode="decimal" placeholder="...">
+    <input type="number" id="E14" inputmode="decimal">
 
     <label id="l3"></label>
-    <input type="number" id="E15" inputmode="decimal" placeholder="...">
+    <input type="number" id="E15" inputmode="decimal">
 
     <label id="l4"></label>
-    <input type="number" id="E16" inputmode="decimal" placeholder="...">
+    <input type="number" id="E16" inputmode="decimal">
 
     <button onclick="calculate()" id="calcBtn" class="calc-btn"></button>
 
@@ -190,6 +190,8 @@
 <script>
 const T = {
     ru: {
+        m1: "🔌 Макс. стринг",
+        m2: "📐 Мин/Макс модули",
         title: "📟 Калькулятор фотомодулей",
         l1: "Максимально допустимое напряжение DC на входе инвертора",
         l2: "Напряжение холостого хода модуля (Voc)",
@@ -201,6 +203,8 @@ const T = {
         copied: "✅ Скопировано!", calculatedVoc: "📊 Расчетный Voc", explanation: "Напряжение при минимальной температуре"
     },
     ua: {
+        m1: "🔌 Макс. стринг",
+        m2: "📐 Мін/Макс модулі",
         title: "📟 Калькулятор фотомодулів",
         l1: "Максимальна напруга DC інвертора",
         l2: "Voc модуля (STC)",
@@ -212,6 +216,8 @@ const T = {
         copied: "✅ Скопійовано!", calculatedVoc: "📊 Розрахунковий Voc", explanation: "Напруга при мінімальній температурі"
     },
     en: {
+        m1: "🔌 Max String",
+        m2: "📐 Min/Max Modules",
         title: "📟 PV Module Calculator",
         l1: "Max DC input voltage of inverter",
         l2: "Module Voc (STC)",
@@ -223,6 +229,8 @@ const T = {
         copied: "✅ Copied!", calculatedVoc: "📊 Calculated Voc", explanation: "Voltage at minimum temperature"
     },
     pl: {
+        m1: "🔌 Max string",
+        m2: "📐 Min/Max moduły",
         title: "📟 Kalkulator modułów PV",
         l1: "Maksymalne napięcie wejściowe DC falownika",
         l2: "Voc modułu (STC)",
@@ -230,7 +238,7 @@ const T = {
         l4: "Współczynnik temperaturowy Voc (%)",
         ph1: "Przykład: 1100", ph2: "Przykład: 41.5", ph3: "Przykład: -25", ph4: "Przykład: -0.29",
         calc: "Oblicz", empty: "⚠️ Uzupełnij wszystkie pola",
-        result: "🔋 Maksymalna liczba modułów: ", copyBtn: "📋 Skopiuj результат",
+        result: "🔋 Maksymalna liczba modułów: ", copyBtn: "📋 Skopiuj wynik",
         copied: "✅ Skopiowano!", calculatedVoc: "📊 Obliczony Voc", explanation: "Napięcie przy minimalnej temperaturze"
     }
 };
@@ -240,6 +248,12 @@ let lastCalc = null;
 function applyLang(lang) {
     localStorage.setItem("lang", lang);
     const t = T[lang];
+    
+    // Обновление навигации
+    document.getElementById('m1').textContent = t.m1;
+    document.getElementById('m2').textContent = t.m2;
+    
+    // Обновление контента
     document.getElementById('title').textContent = t.title;
     document.getElementById('l1').textContent = t.l1;
     document.getElementById('l2').textContent = t.l2;
