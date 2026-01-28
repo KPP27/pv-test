@@ -184,36 +184,53 @@
 
 <script>
     async function copyAsImage() {
-        const svg = document.getElementById('bmsSvg');
-        const toast = document.getElementById('toast');
-        const svgData = new XMLSerializer().serializeToString(svg);
-        const img = new Image();
-        const svgBlob = new Blob([svgData], {type: "image/svg+xml;charset=utf-8"});
-        const url = URL.createObjectURL(svgBlob);
+    const svg = document.getElementById('bmsSvg');
+    const toast = document.getElementById('toast');
+    
+    // 1. Подготовка данных
+    const svgData = new XMLSerializer().serializeToString(svg);
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
+    const img = new Image();
+    
+    // Создаем URL из SVG
+    const svgBlob = new Blob([svgData], {type: "image/svg+xml;charset=utf-8"});
+    const url = URL.createObjectURL(svgBlob);
 
-        img.onload = function() {
-            const canvas = document.createElement("canvas");
+    img.onload = async function() {
+        try {
             canvas.width = 800;
             canvas.height = 380;
-            const ctx = canvas.getContext("2d");
             ctx.fillStyle = "#ffffff";
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             ctx.drawImage(img, 0, 0);
 
+            // 2. Самый важный момент для iOS: конвертация в Blob
             canvas.toBlob(async (blob) => {
                 try {
+                    if (!navigator.clipboard) {
+                        throw new Error("Clipboard API не поддерживается");
+                    }
+                    
                     const data = [new ClipboardItem({ [blob.type]: blob })];
                     await navigator.clipboard.write(data);
+                    
                     toast.style.display = 'block';
                     setTimeout(() => toast.style.display = 'none', 2000);
                 } catch (err) {
-                    alert("Ошибка: для копирования необходим HTTPS");
+                    console.error(err);
+                    alert("Ошибка iOS: " + err.message + "\nПопробуйте зажать пальцем и 'Скопировать'");
                 }
                 URL.revokeObjectURL(url);
             }, 'image/png');
-        };
-        img.src = url;
-    }
+        } catch (e) {
+            alert("Canvas Error: " + e.message);
+        }
+    };
+    
+    img.onerror = () => alert("Ошибка загрузки SVG");
+    img.src = url;
+}
 </script>
 
 </body>
