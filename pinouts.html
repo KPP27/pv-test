@@ -1,237 +1,66 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BMS Pinouts - PV Helper</title>
-    <style>
-        :root {
-            --bg: #f5f5f5;
-            --card-bg: #ffffff;
-            --text: #222;
-            --accent: #2a8cff;
-            --border: #ddd;
-            --shadow: 0 4px 20px rgba(0,0,0,0.1);
-            --radius: 14px;
-        }
-
-        body {
-            font-family: system-ui, -apple-system, Arial, sans-serif;
-            background: var(--bg);
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            justify-content: center;
-        }
-
-        .container {
-            max-width: 500px;
-            width: 100%;
-            background: var(--card-bg);
-            padding: 20px;
-            border-radius: var(--radius);
-            box-shadow: var(--shadow);
-            border: 1px solid var(--border);
-        }
-
-        .back-btn {
-            display: inline-block;
-            margin-bottom: 20px;
-            color: var(--accent);
-            text-decoration: none;
-            font-size: 14px;
-            font-weight: 600;
-        }
-
-        h2 { margin: 0 0 20px 0; font-size: 1.2rem; text-align: center; }
-
-        .pinout-card {
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 10px;
-            background: #fff;
-            text-align: center;
-        }
-
-        .svg-container {
-            width: 100%;
-            background: #fff;
-            border-radius: 8px;
-            margin-bottom: 15px;
-        }
-
-        svg { width: 100%; height: auto; display: block; }
-
-        .copy-btn {
-            width: 100%;
-            padding: 14px;
-            background: #28a745;
-            color: white;
-            border: none;
-            border-radius: 12px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-
-        .copy-btn:active { transform: scale(0.98); opacity: 0.9; }
-
-        .toast {
-            position: fixed;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(0,0,0,0.85);
-            color: white;
-            padding: 12px 24px;
-            border-radius: 25px;
-            font-size: 14px;
-            display: none;
-            z-index: 1000;
-        }
-    </style>
-</head>
-<body>
-
-<div class="container">
-    <a href="index.html" class="back-btn">← Назад</a>
-    <h2>Распиновка кабеля BMS (T568B)</h2>
-
-    <div class="pinout-card">
-        <div class="svg-container">
-            <svg id="bmsSvg" viewBox="0 0 800 380" xmlns="http://www.w3.org/2000/svg">
-                <defs>
-                    <pattern id="stripe-orange" x="0" y="0" width="1" height="20" patternUnits="userSpaceOnUse">
-                        <rect width="12" height="20" fill="white"/>
-                        <rect width="12" height="10" fill="#FF8C00"/>
-                    </pattern>
-                    <pattern id="stripe-green" x="0" y="0" width="1" height="20" patternUnits="userSpaceOnUse">
-                        <rect width="12" height="20" fill="white"/>
-                        <rect width="12" height="10" fill="#32CD32"/>
-                    </pattern>
-                    <pattern id="stripe-blue" x="0" y="0" width="1" height="20" patternUnits="userSpaceOnUse">
-                        <rect width="12" height="20" fill="white"/>
-                        <rect width="12" height="10" fill="#0000FF"/>
-                    </pattern>
-                    <pattern id="stripe-brown" x="0" y="0" width="1" height="20" patternUnits="userSpaceOnUse">
-                        <rect width="12" height="20" fill="white"/>
-                        <rect width="12" height="10" fill="#8B4513"/>
-                    </pattern>
-                </defs>
-
-                <rect width="800" height="380" fill="white" />
-                
-                <text x="400" y="210" font-family="Arial" font-size="32" font-weight="bold" fill="#f0f0f0" text-anchor="middle" style="user-select: none;">pvstringbot</text>
-
-                <g transform="translate(80, 80)">
-                    <rect x="0" y="30" width="144" height="200" rx="8" fill="#fcfcfc" stroke="#999" stroke-width="1"/>
-                    <rect x="12" y="0" width="120" height="30" fill="#f0f0f0" stroke="#999" stroke-width="1"/>
-                    
-                    <g font-family="Arial" font-size="12" font-weight="bold" text-anchor="middle">
-                        <text x="22" y="22">1</text><text x="36" y="22">2</text>
-                        <text x="50" y="22">3</text><text x="64" y="22">4</text>
-                        <text x="78" y="22">5</text><text x="92" y="22">6</text>
-                        <text x="106" y="22">7</text><text x="120" y="22">8</text>
-                    </g>
-                    
-                    <rect x="17" y="30" width="10" height="100" fill="url(#stripe-orange)"/> 
-                    <rect x="31" y="30" width="10" height="100" fill="#FF8C00"/>
-                    <rect x="45" y="30" width="10" height="100" fill="url(#stripe-green)"/>
-                    <rect x="59" y="30" width="10" height="100" fill="#0000FF"/>
-                    <rect x="73" y="30" width="10" height="100" fill="url(#stripe-blue)"/>
-                    <rect x="87" y="30" width="10" height="100" fill="#32CD32"/>
-                    <rect x="101" y="30" width="10" height="100" fill="url(#stripe-brown)"/>
-                    <rect x="115" y="30" width="10" height="100" fill="#8B4513"/>
-                    
-                    <path d="M 0 170 Q 0 230 144 230 Q 144 170 144 170 Z" fill="#2a8cff" />
-                    <text x="72" y="210" fill="white" font-family="Arial" font-size="14" font-weight="bold" text-anchor="middle">MASTER</text>
-                </g>
-
-                <g transform="translate(580, 80)">
-                    <rect x="0" y="30" width="144" height="200" rx="8" fill="#fcfcfc" stroke="#999" stroke-width="1"/>
-                    <rect x="12" y="0" width="120" height="30" fill="#f0f0f0" stroke="#999" stroke-width="1"/>
-                    
-                    <g font-family="Arial" font-size="12" font-weight="bold" text-anchor="middle">
-                        <text x="22" y="22">1</text><text x="36" y="22">2</text>
-                        <text x="50" y="22">3</text><text x="64" y="22">4</text>
-                        <text x="78" y="22">5</text><text x="92" y="22">6</text>
-                        <text x="106" y="22">7</text><text x="120" y="22">8</text>
-                    </g>
-                    
-                    <rect x="17" y="30" width="10" height="100" fill="url(#stripe-orange)"/> 
-                    <rect x="31" y="30" width="10" height="100" fill="#FF8C00"/>
-                    <rect x="45" y="30" width="10" height="100" fill="url(#stripe-green)"/>
-                    <rect x="59" y="30" width="10" height="100" fill="#0000FF"/>
-                    <rect x="73" y="30" width="10" height="100" fill="url(#stripe-blue)"/>
-                    <rect x="87" y="30" width="10" height="100" fill="#32CD32"/>
-                    <rect x="101" y="30" width="10" height="100" fill="url(#stripe-brown)"/>
-                    <rect x="115" y="30" width="10" height="100" fill="#8B4513"/>
-                    
-                    <path d="M 0 170 Q 0 230 144 230 Q 144 170 144 170 Z" fill="#2a8cff" />
-                    <text x="72" y="210" fill="white" font-family="Arial" font-size="14" font-weight="bold" text-anchor="middle">SLAVE</text>
-                </g>
-
-                <path d="M 224 300 C 350 300, 350 360, 400 360 C 450 360, 450 300, 580 300" stroke="#2a8cff" stroke-width="16" fill="none" stroke-linecap="round"/>
-            </svg>
-        </div>
-
-        <button class="copy-btn" onclick="copyAsImage()">📋 Скопировать схему</button>
-    </div>
-</div>
-
-<div id="toast" class="toast">✅ Схема скопирована!</div>
+<style>
+    canvas, svg {
+        -webkit-touch-callout: default !important;
+        user-select: all !important;
+    }
+</style>
 
 <script>
     async function copyAsImage() {
-    const svg = document.getElementById('bmsSvg');
-    const toast = document.getElementById('toast');
-    
-    // 1. Подготовка данных
-    const svgData = new XMLSerializer().serializeToString(svg);
-    const canvas = document.createElement("canvas");
-    const ctx = canvas.getContext("2d");
-    const img = new Image();
-    
-    // Создаем URL из SVG
-    const svgBlob = new Blob([svgData], {type: "image/svg+xml;charset=utf-8"});
-    const url = URL.createObjectURL(svgBlob);
-
-    img.onload = async function() {
+        const svg = document.getElementById('bmsSvg');
+        const toast = document.getElementById('toast');
+        
         try {
-            canvas.width = 800;
-            canvas.height = 380;
-            ctx.fillStyle = "#ffffff";
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            ctx.drawImage(img, 0, 0);
+            const svgData = new XMLSerializer().serializeToString(svg);
+            const canvas = document.createElement("canvas");
+            const ctx = canvas.getContext("2d");
+            
+            // Увеличиваем масштаб для четкости (Retina дисплеи)
+            const scale = 2; 
+            canvas.width = 800 * scale;
+            canvas.height = 380 * scale;
+            ctx.scale(scale, scale);
 
-            // 2. Самый важный момент для iOS: конвертация в Blob
-            canvas.toBlob(async (blob) => {
-                try {
-                    if (!navigator.clipboard) {
-                        throw new Error("Clipboard API не поддерживается");
+            const img = new Image();
+            const svgBlob = new Blob([svgData], {type: "image/svg+xml;charset=utf-8"});
+            const url = URL.createObjectURL(svgBlob);
+
+            img.onload = async function() {
+                ctx.fillStyle = "#ffffff";
+                ctx.fillRect(0, 0, 800, 380);
+                ctx.drawImage(img, 0, 0, 800, 380);
+
+                canvas.toBlob(async (blob) => {
+                    try {
+                        // Попытка №1: Современный Clipboard API
+                        const item = new ClipboardItem({ "image/png": blob });
+                        await navigator.clipboard.write([item]);
+                        showToast("✅ Скопировано!");
+                    } catch (err) {
+                        // Попытка №2: Если Telegram блокирует API, предлагаем скачать
+                        console.error("Clipboard blocked:", err);
+                        
+                        // Создаем временную ссылку для скачивания (это работает в TG)
+                        const link = document.createElement('a');
+                        link.download = 'bms-pinout.png';
+                        link.href = canvas.toDataURL("image/png");
+                        link.click();
+                        
+                        alert("TG блокирует буфер. Картинка сохранена в 'Файлы' или 'Загрузки'.\n\nТакже можно просто зажать схему пальцем и выбрать 'Скопировать'");
                     }
-                    
-                    const data = [new ClipboardItem({ [blob.type]: blob })];
-                    await navigator.clipboard.write(data);
-                    
-                    toast.style.display = 'block';
-                    setTimeout(() => toast.style.display = 'none', 2000);
-                } catch (err) {
-                    console.error(err);
-                    alert("Ошибка iOS: " + err.message + "\nПопробуйте зажать пальцем и 'Скопировать'");
-                }
-                URL.revokeObjectURL(url);
-            }, 'image/png');
+                    URL.revokeObjectURL(url);
+                }, 'image/png');
+            };
+            img.src = url;
         } catch (e) {
-            alert("Canvas Error: " + e.message);
+            alert("Ошибка: " + e.message);
         }
-    };
-    
-    img.onerror = () => alert("Ошибка загрузки SVG");
-    img.src = url;
-}
-</script>
+    }
 
-</body>
-</html>
+    function showToast(text) {
+        const toast = document.getElementById('toast');
+        toast.innerText = text;
+        toast.style.display = 'block';
+        setTimeout(() => toast.style.display = 'none', 2500);
+    }
+</script>
