@@ -5,38 +5,27 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>BMS Pinouts</title>
     <style>
-        body { font-family: sans-serif; background: #f5f5f5; margin: 0; padding: 15px; display: flex; justify-content: center; -webkit-user-select: none; }
+        :root { --accent: #2a8cff; --green: #28a745; }
+        body { font-family: sans-serif; background: #f5f5f5; margin: 0; padding: 15px; display: flex; justify-content: center; }
         .container { max-width: 450px; width: 100%; background: #fff; padding: 20px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); text-align: center; }
-        .back-btn { display: block; text-align: left; margin-bottom: 15px; color: #2a8cff; text-decoration: none; font-weight: bold; }
+        .back-btn { display: block; text-align: left; margin-bottom: 15px; color: var(--accent); text-decoration: none; font-weight: bold; }
         
-        /* Контейнер для схемы */
-        .pinout-wrapper { 
-            position: relative; 
-            border: 1px solid #ddd; 
-            border-radius: 12px; 
-            overflow: hidden;
-            background: #fff;
-        }
-
-        /* Настоящая картинка, которая будет лежать сверху и которую можно зажать */
-        #resultImage {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            opacity: 0; /* Делаем прозрачной, но она там есть! */
-            z-index: 10;
-            -webkit-touch-callout: default !important; /* Включает меню на iPhone */
-        }
-
+        .pinout-wrapper { position: relative; border: 1px solid #ddd; border-radius: 12px; overflow: hidden; background: #fff; margin-bottom: 15px; }
         svg { width: 100%; height: auto; display: block; }
-        
-        .info-box {
-            margin-top: 15px;
-            padding: 10px;
-            background: #e8f4fd;
-            border-radius: 8px;
-            font-size: 14px;
-            color: #444;
+
+        /* Слой для iPhone */
+        #iosLayer {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            opacity: 0; z-index: 10; display: none;
+            -webkit-touch-callout: default !important;
         }
+
+        .btn { width: 100%; padding: 15px; border: none; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer; color: white; margin-top: 10px; }
+        .copy-btn { background: var(--green); }
+        .save-btn { background: var(--accent); }
+
+        .hint { font-size: 13px; color: #666; margin-top: 10px; line-height: 1.4; display: none; }
+        .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.8); color: #fff; padding: 10px 20px; border-radius: 20px; display: none; z-index: 100; }
     </style>
 </head>
 <body>
@@ -44,15 +33,11 @@
 <div class="container">
     <a href="index.html" class="back-btn">← Назад</a>
     
-    <p style="font-size: 14px; color: #666; margin-bottom: 10px;">Зажмите схему пальцем, чтобы скопировать или отправить</p>
-
-    <div class="pinout-wrapper">
-        <img id="resultImage" src="" alt="Pinout">
-        
+    <div class="pinout-wrapper" id="wrapper">
+        <img id="iosLayer" src="" alt="Pinout">
         <svg id="bmsSvg" viewBox="0 0 800 380">
             <rect width="800" height="380" fill="white" />
             <text x="400" y="210" font-family="Arial" font-size="40" font-weight="bold" fill="#f4f4f4" text-anchor="middle">pvstringbot</text>
-            
             <g transform="translate(80, 80)">
                 <rect x="0" y="30" width="144" height="200" rx="8" fill="#f0f0f0" stroke="#999" />
                 <rect x="12" y="0" width="120" height="30" fill="#ddd" stroke="#999" />
@@ -71,7 +56,6 @@
                     <text x="78" y="22">5</text><text x="92" y="22">6</text><text x="106" y="22">7</text><text x="120" y="22">8</text>
                 </g>
             </g>
-
             <g transform="translate(580, 80)">
                 <rect x="0" y="30" width="144" height="200" rx="8" fill="#f0f0f0" stroke="#999" />
                 <rect x="12" y="0" width="120" height="30" fill="#ddd" stroke="#999" />
@@ -90,27 +74,35 @@
                     <text x="78" y="22">5</text><text x="92" y="22">6</text><text x="106" y="22">7</text><text x="120" y="22">8</text>
                 </g>
             </g>
-
             <path d="M 224 300 C 350 300, 350 360, 400 360 C 450 360, 450 300, 580 300" stroke="#2a8cff" stroke-width="16" fill="none" stroke-linecap="round"/>
         </svg>
     </div>
 
-    <div class="info-box">
-        <b>Совет:</b> На iPhone выберите «Скопировать», а в Telegram просто вставьте. На Android выберите «Поделиться изображением».
+    <div id="androidUI">
+        <button class="btn copy-btn" onclick="handleCopy()">📋 Скопировать схему</button>
+        <button class="btn save-btn" onclick="handleSave()">💾 Сохранить как файл</button>
     </div>
+
+    <div id="iosUI" style="display:none;">
+        <p class="hint" style="display:block;"><b>iPhone detected:</b> Зажмите схему пальцем и выберите «Скопировать» или «Поделиться».</p>
+    </div>
+
 </div>
 
+<div id="toast" class="toast">✅ Скопировано в буфер!</div>
+
 <script>
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
     window.onload = function() {
         const svg = document.getElementById('bmsSvg');
-        const imgElement = document.getElementById('resultImage');
+        const iosLayer = document.getElementById('iosLayer');
         
-        // Превращаем SVG в PNG при загрузке
+        // Рендерим картинку в любом случае (для iOS или для кнопок)
         const svgData = new XMLSerializer().serializeToString(svg);
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
         const img = new Image();
-        
         const svgBlob = new Blob([svgData], {type: 'image/svg+xml;charset=utf-8'});
         const url = URL.createObjectURL(svgBlob);
 
@@ -121,12 +113,45 @@
             ctx.fillRect(0, 0, 800, 380);
             ctx.drawImage(img, 0, 0);
             
-            // Устанавливаем готовую картинку в src нашего невидимого элемента
-            imgElement.src = canvas.toDataURL('image/png');
+            const pngUrl = canvas.toDataURL('image/png');
+            
+            if (isIOS) {
+                document.getElementById('iosUI').style.display = 'block';
+                document.getElementById('androidUI').style.display = 'none';
+                iosLayer.style.display = 'block';
+                iosLayer.src = pngUrl;
+            } else {
+                window.generatedPng = pngUrl;
+                window.generatedBlob = canvas.toBlob(b => window.currentBlob = b, 'image/png');
+            }
             URL.revokeObjectURL(url);
         };
         img.src = url;
     };
+
+    async function handleCopy() {
+        try {
+            if (!window.currentBlob) return;
+            const item = new ClipboardItem({ "image/png": window.currentBlob });
+            await navigator.clipboard.write([item]);
+            showToast();
+        } catch (e) {
+            handleSave(); // Если буфер не сработал на Android, просто качаем
+        }
+    }
+
+    function handleSave() {
+        const link = document.createElement('a');
+        link.download = 'bms-pinout.png';
+        link.href = window.generatedPng;
+        link.click();
+    }
+
+    function showToast() {
+        const t = document.getElementById('toast');
+        t.style.display = 'block';
+        setTimeout(() => t.style.display = 'none', 2000);
+    }
 </script>
 
 </body>
