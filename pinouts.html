@@ -3,23 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>BMS Professional Diagrams</title>
+    <title>BMS Pro Pinouts</title>
     <style>
-        :root { --accent: #007bff; --bg: #f8f9fa; --border: #dee2e6; --dark: #343a40; }
+        :root { --accent: #007bff; --bg: #f8f9fa; --dark: #343a40; }
         body { font-family: -apple-system, sans-serif; background: var(--bg); margin: 0; padding: 10px; display: flex; flex-direction: column; align-items: center; }
         .container { max-width: 650px; width: 100%; }
-        
-        .acc-item { background: #fff; border: 1px solid var(--border); border-radius: 12px; margin-bottom: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-        .acc-header { padding: 18px; cursor: pointer; display: flex; justify-content: space-between; font-weight: bold; color: var(--dark); font-size: 16px; }
-        .acc-item.open .acc-header { background: #f1f3f5; border-bottom: 1px solid var(--border); }
-        
+        .acc-item { background: #fff; border: 1px solid #dee2e6; border-radius: 12px; margin-bottom: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .acc-header { padding: 18px; cursor: pointer; display: flex; justify-content: space-between; font-weight: bold; color: var(--dark); }
+        .acc-item.open .acc-header { background: #f1f3f5; border-bottom: 1px solid #dee2e6; }
         .acc-content { display: none; padding: 15px; text-align: center; background: #fff; position: relative; }
         .acc-item.open .acc-content { display: block; }
-
-        .svg-wrap { position: relative; width: 100%; border: 1px solid #eee; border-radius: 8px; }
+        .svg-wrap { position: relative; width: 100%; border: 1px solid #eee; border-radius: 8px; overflow: hidden; }
         svg { width: 100%; height: auto; display: block; }
         .ios-layer { position: absolute; top:0; left:0; width:100%; height:100%; opacity:0; z-index:10; -webkit-touch-callout: default; }
-
         .btn-copy { background: #28a745; color: white; border: none; padding: 14px; border-radius: 8px; font-weight: bold; cursor: pointer; display: none; margin-top: 15px; width: 100%; font-size: 16px; }
         .toast { position: fixed; bottom: 20px; background: rgba(0,0,0,0.9); color: white; padding: 10px 20px; border-radius: 25px; display: none; z-index: 1000; }
     </style>
@@ -32,9 +28,9 @@
 <script>
 const pinouts = [
     { id: 'str', title: "Пряма вита пара (T568B)", m: "MASTER", s: "SLAVE", links: [[1,1],[2,2],[3,3],[4,4],[5,5],[6,6],[7,7],[8,8]] },
-    { id: 'ld_pyl', title: "LuxPower/Deye ↔ Pylontech NEW", m: "Inverter", s: "Battery", links: [[4,4,'CAN-H'], [5,5,'CAN-L']] },
-    { id: 'vic_pyl', title: "Victron GX ↔ Pylontech NEW", m: "Victron GX", s: "Battery", links: [[7,4,'CAN-H'], [8,5,'CAN-L'], [3,3,'GND']] },
-    { id: 'vic_dyn', title: "Victron GX ↔ Dyness", m: "Victron GX", s: "Battery", links: [[7,1,'CAN-H'], [8,2,'CAN-L'], [3,3,'GND']] }
+    { id: 'ld_pyl', title: "Deye / LuxPower ↔ Pylontech NEW", m: "Inverter", s: "Battery", links: [[4,4,'CAN-H'], [5,5,'CAN-L']] },
+    { id: 'vic_pyl', title: "Victron GX ↔ Pylontech NEW", m: "Victron GX", s: "Pylontech", links: [[7,4,'CAN-H'], [8,5,'CAN-L'], [3,3,'GND']] },
+    { id: 'ld_dyn', title: "Deye / LuxPower ↔ Dyness", m: "Inverter", s: "Battery", links: [[4,1,'CAN-H'], [5,2,'CAN-L']] }
 ];
 
 const colors = ["", "#FF8C00", "#FF8C00", "#32CD32", "#0056b3", "#0056b3", "#32CD32", "#8B4513", "#8B4513"];
@@ -75,18 +71,18 @@ function draw(id) {
     target.innerHTML = `
         <svg id="raw-${id}" viewBox="0 0 800 420" xmlns="http://www.w3.org/2000/svg">
             <defs>
-                <clipPath id="clip-pin"><rect width="130" height="26" rx="3"/></clipPath>
+                <clipPath id="cp-${id}"><rect width="100" height="26" rx="3"/></clipPath>
             </defs>
             <rect width="800" height="420" fill="white"/>
             <rect width="800" height="50" fill="#343a40"/>
             <text x="400" y="32" font-family="Arial" font-size="20" font-weight="bold" text-anchor="middle" fill="white">${data.title}</text>
             
-            <text x="140" y="85" font-family="Arial" font-size="16" font-weight="bold" text-anchor="middle" fill="#007bff">${data.m}</text>
-            <text x="660" y="85" font-family="Arial" font-size="16" font-weight="bold" text-anchor="middle" fill="#007bff">${data.s}</text>
+            <text x="180" y="85" font-family="Arial" font-size="16" font-weight="bold" text-anchor="middle" fill="#007bff">${data.m}</text>
+            <text x="620" y="85" font-family="Arial" font-size="16" font-weight="bold" text-anchor="middle" fill="#007bff">${data.s}</text>
 
             <g id="lines-${id}"></g>
-            <g transform="translate(50, 105)">${drawConnector(id, 'm')}</g>
-            <g transform="translate(620, 105)">${drawConnector(id, 's')}</g>
+            <g transform="translate(130, 105)">${drawConn('m', id)}</g>
+            <g transform="translate(570, 105)">${drawConn('s', id)}</g>
         </svg>
     `;
 
@@ -94,8 +90,8 @@ function draw(id) {
     data.links.forEach(l => {
         const y1 = 121 + (l[0]-1)*36, y2 = 121 + (l[1]-1)*36;
         const p = document.createElementNS("http://www.w3.org/2000/svg", "path");
-        // Плавная кривая
-        p.setAttribute("d", `M 220 ${y1} C 400 ${y1}, 400 ${y2}, 580 ${y2}`);
+        // Линии теперь короче, изгиб плавнее
+        p.setAttribute("d", `M 230 ${y1} C 400 ${y1}, 400 ${y2}, 570 ${y2}`);
         p.setAttribute("stroke", colors[l[0]]);
         p.setAttribute("stroke-width", "5");
         p.setAttribute("fill", "none");
@@ -110,24 +106,21 @@ function draw(id) {
     finalize(id);
 }
 
-function drawConnector(id, side) {
-    let h = `<rect x="0" y="0" width="130" height="295" fill="#f8f9fa" stroke="#ccc" stroke-width="1" rx="5"/>`;
+function drawConn(side, id) {
+    let h = `<rect width="100" height="295" fill="#f8f9fa" stroke="#ccc" rx="5"/>`;
     for(let i=1; i<=8; i++) {
         const y = 8 + (i-1)*36;
         const color = colors[i];
-        
-        h += `<g transform="translate(10, ${y})">`;
+        h += `<g transform="translate(5, ${y})">`;
+        h += `<rect width="90" height="26" fill="${color}" rx="3"/>`;
         if(striped[i]) {
-            h += `<rect width="110" height="26" fill="${color}" rx="3"/>`;
-            // Белые полоски внутри пина через clip-path
-            h += `<g clip-path="url(#clip-pin)">
-                    <path d="M-10 30 L10 -10 M10 30 L30 -10 M30 30 L50 -10 M50 30 L70 -10 M70 30 L90 -10 M90 30 L110 -10" stroke="white" stroke-width="5" opacity="0.7"/>
+            h += `<g clip-path="url(#cp-${id})">
+                    <path d="M-10 30 L10 -10 M15 30 L35 -10 M40 30 L60 -10 M65 30 L85 -10 M90 30 L110 -10" stroke="white" stroke-width="6" opacity="0.8"/>
                   </g>`;
-        } else {
-            h += `<rect width="110" height="26" fill="${color}" rx="3"/>`;
         }
-        // Цифра внутри коннектора слева
-        h += `<text x="-15" y="18" font-family="Arial" font-size="13" font-weight="bold" fill="#666" text-anchor="middle">${i}</text>`;
+        // Пины слева для левого, справа для правого
+        const textX = (side === 'm') ? -15 : 105;
+        h += `<text x="${textX}" y="18" font-family="Arial" font-size="13" font-weight="bold" fill="#666" text-anchor="middle">${i}</text>`;
         h += `</g>`;
     }
     return h;
@@ -135,11 +128,13 @@ function drawConnector(id, side) {
 
 function addSignalLabel(id, idx, txt, side) {
     const target = document.getElementById(`raw-${id}`);
+    // Смещаем текст к краям картинки, чтобы не мешал коннекторам
+    const x = (side === 'm') ? 110 : 690;
     const t = document.createElementNS("http://www.w3.org/2000/svg", "text");
-    t.setAttribute("x", side === 'm' ? 35 : 765);
+    t.setAttribute("x", x);
     t.setAttribute("y", 125 + (idx-1)*36);
-    t.setAttribute("font-family", "Arial"); t.setAttribute("font-size", "12"); t.setAttribute("font-weight", "bold");
-    t.setAttribute("text-anchor", side === 'm' ? "end" : "start");
+    t.setAttribute("font-family", "Arial"); t.setAttribute("font-size", "13"); t.setAttribute("font-weight", "bold");
+    t.setAttribute("text-anchor", (side === 'm') ? "end" : "start");
     t.setAttribute("fill", "#d9534f");
     t.textContent = txt;
     target.appendChild(t);
