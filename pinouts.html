@@ -3,54 +3,47 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>BMS Connector Guide Pro</title>
+    <title>BMS Pinout Tool</title>
     <style>
         :root { --accent: #007bff; --bg: #f8f9fa; --dark: #343a40; }
         body { font-family: -apple-system, sans-serif; background: var(--bg); margin: 0; padding: 10px; display: flex; flex-direction: column; align-items: center; }
         .container { max-width: 650px; width: 100%; }
-        .acc-item { background: #fff; border: 1px solid #dee2e6; border-radius: 12px; margin-bottom: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-        .acc-header { padding: 16px; cursor: pointer; display: flex; justify-content: space-between; font-weight: bold; color: var(--dark); font-size: 15px; }
+        
+        /* Карточки с небольшим скруглением для UI, но само фото будет острым */
+        .acc-item { background: #fff; border: 1px solid #dee2e6; border-radius: 8px; margin-bottom: 12px; overflow: hidden; }
+        .acc-header { padding: 16px; cursor: pointer; display: flex; justify-content: space-between; font-weight: bold; color: var(--dark); border-bottom: 1px solid transparent; }
         .acc-item.open .acc-header { background: #f1f3f5; border-bottom: 1px solid #dee2e6; }
-        .acc-content { display: none; padding: 15px; text-align: center; background: #fff; position: relative; }
+        
+        .acc-content { display: none; padding: 10px; text-align: center; background: #fff; }
         .acc-item.open .acc-content { display: block; }
-        .svg-wrap { position: relative; width: 100%; border: 1px solid #eee; border-radius: 8px; overflow: hidden; }
+
+        .svg-wrap { position: relative; width: 100%; border: 1px solid #eee; background: white; }
         svg { width: 100%; height: auto; display: block; }
+        
+        /* Слой для iOS (force touch save) */
         .ios-layer { position: absolute; top:0; left:0; width:100%; height:100%; opacity:0; z-index:10; -webkit-touch-callout: default; }
-        .btn-copy { background: #28a745; color: white; border: none; padding: 14px; border-radius: 8px; font-weight: bold; cursor: pointer; display: none; margin-top: 15px; width: 100%; font-size: 16px; }
+
+        .btn-copy { background: #28a745; color: white; border: none; padding: 14px; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 15px; width: 100%; font-size: 16px; }
+        .btn-copy:active { background: #218838; }
+        
         .toast { position: fixed; bottom: 20px; background: rgba(0,0,0,0.9); color: white; padding: 10px 20px; border-radius: 25px; display: none; z-index: 1000; }
     </style>
 </head>
 <body>
 
 <div class="container" id="accordion"></div>
-<div id="toast" class="toast">✅ Схема скопирована</div>
+<div id="toast" class="toast">✅ Изображение скопировано</div>
 
 <script>
 const pinouts = [
     { id: 'p1', title: "1. Пряма вита пара (T568B)", m: "MASTER", s: "SLAVE", links: [[1,1],[2,2],[3,3],[4,4],[5,5],[6,6],[7,7],[8,8]] },
     { id: 'p2', title: "2. LuxPower / Deye / Solis ↔ Dyness", m: "Inverter", s: "Dyness", links: [[1,1],[2,2],[3,3],[4,4,'CAN-H'],[5,5,'CAN-L'],[6,6],[7,7],[8,8]] },
-    { id: 'p3', title: "3. LuxPower / Deye / Solis ↔ Pylontech NEW", m: "Inverter", s: "Pylontech", 
-        links: [[1,1],[2,2],[3,3],[4,4,'CAN-H'],[5,5,'CAN-L'],[6,6],[7,7],[8,8]],
-        s_null: [1,2,3] },
+    { id: 'p3', title: "3. LuxPower / Deye / Solis ↔ Pylontech NEW", m: "Inverter", s: "Pylontech", links: [[1,1],[2,2],[3,3],[4,4,'CAN-H'],[5,5,'CAN-L'],[6,6],[7,7],[8,8]], s_null: [1,2,3] },
     { id: 'p4', title: "4. LuxPower / Deye / Solis ↔ Pylontech US2000/3000", m: "Inverter", s: "Pylontech", links: [[1,1],[2,2],[3,3],[4,4,'CAN-H'],[5,5,'CAN-L'],[6,6],[7,7],[8,8]] },
-    { id: 'p5', title: "5. Victron GX ↔ Pylontech NEW", m: "Victron GX", s: "Pylontech", 
-        links: [[3,6,'GND'],[7,4,'CAN-H'],[8,5,'CAN-L']], 
-        m_null: [1,2,4,5,6], s_null: [1,2,3], m_colors: {3:'#32CD32', 7:'#0056b3', 8:'#0056b3'}, s_colors: {6:'#32CD32', 4:'#0056b3', 5:'#0056b3'} },
-    { id: 'p6', title: "6. Victron GX ↔ Pylontech US2000/3000", m: "Victron GX", s: "Pylontech", 
-        links: [[3,2,'GND'],[7,4,'CAN-H'],[8,5,'CAN-L']], 
-        m_null: [1,2,4,5,6], m_colors: {3:'#FF8C00', 7:'#0056b3', 8:'#0056b3'}, s_colors: {2:'#FF8C00', 4:'#0056b3', 5:'#0056b3'} },
-    { id: 'p8', title: "8. LuxPower (Красные дипы) ↔ Pylontech NEW", m: "LuxPower", s: "Pylontech", 
-        links: [[3,5,'CAN-L'],[4,4,'CAN-H']], 
-        m_null: [1,2,5,6,7,8], s_null: [1,2,3], m_colors: {3:'#0056b3', 4:'#0056b3'}, s_colors: {4:'#0056b3', 5:'#0056b3'} },
-    { id: 'p9', title: "9. LuxPower (Красные дипы) ↔ Pylontech US2000/3000", m: "LuxPower", s: "Pylontech", 
-        links: [[3,5,'CAN-L'],[4,4,'CAN-H']], 
-        m_null: [1,2,5,6,7,8], m_colors: {3:'#0056b3', 4:'#0056b3'}, s_colors: {4:'#0056b3', 5:'#0056b3'} },
-    { id: 'p10', title: "10. LuxPower (Красные дипы) ↔ Dyness", m: "LuxPower", s: "Dyness", 
-        links: [[3,5,'CAN-L'],[4,4,'CAN-H']], 
-        m_null: [1,2,5,6,7,8], m_colors: {3:'#0056b3', 4:'#0056b3'}, s_colors: {4:'#0056b3', 5:'#0056b3'} },
-    { id: 'p11', title: "11. Sungrow ↔ Sungrow", m: "Sungrow Inv", s: "Sungrow Bat", 
-        links: [[1,1],[2,2],[3,3],[4,4,'CAN-H'],[5,5,'CAN-L'],[6,6],[7,7],[8,8]],
-        m_colors: {4:'#0056b3', 5:'#0056b3'}, s_colors: {4:'#0056b3', 5:'#0056b3'} }
+    { id: 'p5', title: "5. Victron GX ↔ Pylontech NEW", m: "Victron GX", s: "Pylontech", links: [[3,6,'GND'],[7,4,'CAN-H'],[8,5,'CAN-L']], m_null: [1,2,4,5,6], s_null: [1,2,3], m_colors: {3:'#32CD32', 7:'#0056b3', 8:'#0056b3'}, s_colors: {6:'#32CD32', 4:'#0056b3', 5:'#0056b3'} },
+    { id: 'p6', title: "6. Victron GX ↔ Pylontech US2000/3000", m: "Victron GX", s: "Pylontech", links: [[3,2,'GND'],[7,4,'CAN-H'],[8,5,'CAN-L']], m_null: [1,2,4,5,6], m_colors: {3:'#FF8C00', 7:'#0056b3', 8:'#0056b3'}, s_colors: {2:'#FF8C00', 4:'#0056b3', 5:'#0056b3'} },
+    { id: 'p8', title: "8. LuxPower (Красные дипы) ↔ Pylontech NEW", m: "LuxPower", s: "Pylontech", links: [[3,5,'CAN-L'],[4,4,'CAN-H']], m_null: [1,2,5,6,7,8], s_null: [1,2,3], m_colors: {3:'#0056b3', 4:'#0056b3'}, s_colors: {4:'#0056b3', 5:'#0056b3'} },
+    { id: 'p11', title: "11. Sungrow ↔ Sungrow", m: "Sungrow Inv", s: "Sungrow Bat", links: [[1,1],[2,2],[3,3],[4,4,'CAN-H'],[5,5,'CAN-L'],[6,6],[7,7],[8,8]], m_colors: {4:'#0056b3', 5:'#0056b3'}, s_colors: {4:'#0056b3', 5:'#0056b3'} }
 ];
 
 const stdColors = ["", "#FF8C00", "#FF8C00", "#32CD32", "#0056b3", "#0056b3", "#32CD32", "#8B4513", "#8B4513"];
@@ -64,11 +57,11 @@ function init() {
         item.innerHTML = `
             <div class="acc-header" onclick="toggle('${p.id}')">${p.title}</div>
             <div class="acc-content" id="c-${p.id}">
-                <div class="svg-wrap">
+                <div class="svg-wrap" id="wrap-${p.id}">
                     <img class="ios-layer" id="ios-${p.id}">
                     <div id="svg-${p.id}"></div>
                 </div>
-                <button class="btn-copy" id="btn-${p.id}" onclick="copy('${p.id}')">Копировать изображение</button>
+                <button class="btn-copy" onclick="copyImage('${p.id}')">Копировать схему</button>
             </div>
         `;
         acc.appendChild(item);
@@ -76,8 +69,7 @@ function init() {
 }
 
 function toggle(id) {
-    const cont = document.getElementById(`c-${id}`);
-    const parent = cont.parentElement;
+    const parent = document.getElementById(`c-${id}`).parentElement;
     const isOpen = parent.classList.contains('open');
     document.querySelectorAll('.acc-item').forEach(i => i.classList.remove('open'));
     if(!isOpen) { parent.classList.add('open'); draw(id); }
@@ -88,18 +80,18 @@ function draw(id) {
     const target = document.getElementById(`svg-${id}`);
     if(target.innerHTML !== "") return;
 
-    // Единая функция расчета центральной оси для каждого пина
-    // 105 - отступ группы коннектора, 8 - внутренний отступ, 13 - половина высоты пина
-    const getPinCenterY = (idx) => 105 + 8 + (idx - 1) * 36 + 13;
+    const getPinY = (idx) => 105 + 8 + (idx - 1) * 36 + 13;
 
     target.innerHTML = `
-        <svg id="raw-${id}" viewBox="0 0 800 420" xmlns="http://www.w3.org/2000/svg">
-            <defs><clipPath id="cp-${id}"><rect width="90" height="26" rx="3"/></clipPath></defs>
+        <svg id="raw-${id}" viewBox="0 0 800 420" xmlns="http://www.w3.org/2000/svg" style="background:white">
+            <defs><clipPath id="cp-${id}"><rect width="90" height="26" rx="2"/></clipPath></defs>
             <rect width="800" height="420" fill="white"/>
             <rect width="800" height="50" fill="#343a40"/>
-            <text x="400" y="32" font-family="Arial" font-size="18" font-weight="bold" text-anchor="middle" fill="white">${data.title}</text>
-            <text x="180" y="85" font-family="Arial" font-size="15" font-weight="bold" text-anchor="middle" fill="#007bff">${data.m}</text>
-            <text x="620" y="85" font-family="Arial" font-size="15" font-weight="bold" text-anchor="middle" fill="#007bff">${data.s}</text>
+            <text x="400" y="25" font-family="Arial" font-size="18" font-weight="bold" text-anchor="middle" fill="white" dominant-baseline="middle">${data.title}</text>
+            
+            <text x="180" y="85" font-family="Arial" font-size="15" font-weight="bold" text-anchor="middle" fill="#007bff" dominant-baseline="middle">${data.m}</text>
+            <text x="620" y="85" font-family="Arial" font-size="15" font-weight="bold" text-anchor="middle" fill="#007bff" dominant-baseline="middle">${data.s}</text>
+
             <g id="lines-${id}"></g>
             <g transform="translate(130, 105)">${drawConn('m', data)}</g>
             <g transform="translate(570, 105)">${drawConn('s', data)}</g>
@@ -108,97 +100,102 @@ function draw(id) {
 
     const linesG = document.getElementById(`lines-${id}`);
     data.links.forEach(l => {
-        const y1 = getPinCenterY(l[0]);
-        const y2 = getPinCenterY(l[1]);
+        const y1 = getPinY(l[0]), y2 = getPinY(l[1]);
         const color = (data.m_colors && data.m_colors[l[0]]) || stdColors[l[0]];
-        
         const p = document.createElementNS("http://www.w3.org/2000/svg", "path");
         p.setAttribute("d", `M 230 ${y1} C 400 ${y1}, 400 ${y2}, 570 ${y2}`);
         p.setAttribute("stroke", color);
-        p.setAttribute("stroke-width", "4");
+        p.setAttribute("stroke-width", "5");
         p.setAttribute("fill", "none");
-        if(stdStriped[l[0]]) p.setAttribute("stroke-dasharray", "10,5");
+        if(stdStriped[l[0]]) p.setAttribute("stroke-dasharray", "12,6");
         linesG.appendChild(p);
 
-        // Теперь передаем y1 и y2 напрямую, чтобы текст сел точно на ось
         if(l[2]) {
-            addSignalLabel(id, l[2], 'm', y1);
-            addSignalLabel(id, l[2], 's', y2);
+            addLabel(id, l[2], 'm', y1);
+            addLabel(id, l[2], 's', y2);
         }
     });
-    finalize(id);
+    renderToImage(id);
 }
 
 function drawConn(side, data) {
-    let h = `<rect width="100" height="295" fill="#f8f9fa" stroke="#ccc" rx="5"/>`;
-    const nulls = (side === 'm') ? (data.m_null || []) : (data.s_null || []);
-    const customColors = (side === 'm') ? (data.m_colors || {}) : (data.s_colors || {});
+    let h = `<rect width="100" height="295" fill="#f8f9fa" stroke="#ccc" rx="2"/>`;
+    const nulls = (side === 'm' ? data.m_null : data.s_null) || [];
+    const customs = (side === 'm' ? data.m_colors : data.s_colors) || {};
 
     for(let i=1; i<=8; i++) {
         const y = 8 + (i-1)*36;
-        const centerYInside = 13; // Центр относительно группы пина
+        const color = customs[i] || stdColors[i];
         const isNull = nulls.includes(i);
-        const color = customColors[i] || stdColors[i];
 
         h += `<g transform="translate(5, ${y})">`;
         if(isNull) {
-            h += `<rect width="90" height="26" fill="none" stroke="#ccc" stroke-dasharray="2,2" rx="3"/>`;
-            h += `<text x="45" y="${centerYInside}" font-family="Arial" font-size="9" font-weight="bold" fill="#aaa" text-anchor="middle" dominant-baseline="central">NULL</text>`;
+            h += `<rect width="90" height="26" fill="none" stroke="#ddd" stroke-dasharray="2,2" rx="2"/>`;
+            h += `<text x="45" y="13" font-family="Arial" font-size="9" fill="#bbb" text-anchor="middle" dominant-baseline="central">NULL</text>`;
         } else {
-            h += `<rect width="90" height="26" fill="${color}" rx="3"/>`;
-            if(stdStriped[i] && !customColors[i]) {
-                h += `<g clip-path="url(#cp-${data.id})">
-                        <path d="M-10 30 L10 -10 M15 30 L35 -10 M40 30 L60 -10 M65 30 L85 -10 M90 30 L110 -10" stroke="white" stroke-width="6" opacity="0.8"/>
-                      </g>`;
+            h += `<rect width="90" height="26" fill="${color}" rx="2"/>`;
+            if(stdStriped[i] && !customs[i]) {
+                h += `<g clip-path="url(#cp-${data.id})"><path d="M-10 30 L10 -10 M15 30 L35 -10 M40 30 L60 -10 M65 30 L85 -10 M90 30 L110 -10" stroke="white" stroke-width="6" opacity="0.7"/></g>`;
             }
         }
-        // Номер пина теперь тоже центрируется через dominant-baseline
-        const textX = (side === 'm') ? -15 : 105;
-        h += `<text x="${textX}" y="${centerYInside}" font-family="Arial" font-size="13" font-weight="bold" fill="#666" text-anchor="middle" dominant-baseline="central">${i}</text>`;
+        h += `<text x="${side==='m'?-15:105}" y="13" font-family="Arial" font-size="13" font-weight="bold" fill="#666" text-anchor="middle" dominant-baseline="central">${i}</text>`;
         h += `</g>`;
     }
     return h;
 }
 
-function addSignalLabel(id, txt, side, centerY) {
-    const target = document.getElementById(`raw-${id}`);
-    const x = (side === 'm') ? 105 : 695; // Позиция текста сигнала
-    
+function addLabel(id, txt, side, y) {
     const t = document.createElementNS("http://www.w3.org/2000/svg", "text");
-    t.setAttribute("x", x);
-    t.setAttribute("y", centerY);
-    t.setAttribute("font-family", "Arial");
-    t.setAttribute("font-size", "12");
-    t.setAttribute("font-weight", "bold");
-    t.setAttribute("text-anchor", (side === 'm') ? "end" : "start");
+    t.setAttribute("x", side === 'm' ? 110 : 690);
+    t.setAttribute("y", y);
+    t.setAttribute("font-family", "Arial"); t.setAttribute("font-size", "12"); t.setAttribute("font-weight", "bold");
+    t.setAttribute("text-anchor", side === 'm' ? "end" : "start");
     t.setAttribute("fill", "#d9534f");
-    t.setAttribute("dominant-baseline", "central"); // Ключевое свойство для выравнивания по оси
+    t.setAttribute("dominant-baseline", "central");
     t.textContent = txt;
-    target.appendChild(t);
+    document.getElementById(`raw-${id}`).appendChild(t);
 }
-function finalize(id) {
+
+function renderToImage(id) {
     const svg = document.getElementById(`raw-${id}`);
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
-    const img = new Image();
     const xml = new XMLSerializer().serializeToString(svg);
-    const url = URL.createObjectURL(new Blob([xml], {type:'image/svg+xml;charset=utf-8'}));
+    const img = new Image();
+    const blob = new Blob([xml], {type: 'image/svg+xml;charset=utf-8'});
+    const url = URL.createObjectURL(blob);
+
     img.onload = function() {
         canvas.width = 800; canvas.height = 420;
-        ctx.fillStyle = "white"; ctx.fillRect(0,0,800,420);
+        ctx.fillStyle = "white";
+        ctx.fillRect(0, 0, 800, 420); // Прямоугольный фон без скруглений
         ctx.drawImage(img, 0, 0);
-        document.getElementById(`ios-${id}`).src = canvas.toDataURL("image/png");
-        if(!/iPhone|iPad/i.test(navigator.userAgent)) {
-            document.getElementById(`btn-${id}`).style.display = 'block';
-            canvas.toBlob(b => window[`b-${id}`] = b);
-        }
+        const pngUrl = canvas.toDataURL("image/png");
+        document.getElementById(`ios-${id}`).src = pngUrl;
+        window[`blob-${id}`] = canvas; 
+        URL.revokeObjectURL(url);
     };
     img.src = url;
 }
 
-async function copy(id) {
-    const b = window[`b-${id}`];
-    await navigator.clipboard.write([new ClipboardItem({"image/png": b})]);
+async function copyImage(id) {
+    const canvas = window[`blob-${id}`];
+    if (!canvas) return;
+    
+    try {
+        canvas.toBlob(async (blob) => {
+            const data = [new ClipboardItem({ "image/png": blob })];
+            await navigator.clipboard.write(data);
+            showToast();
+        });
+    } catch (err) {
+        // Запасной вариант для некоторых браузеров Android
+        const img = document.getElementById(`ios-${id}`);
+        alert("Зажмите пальцем на изображении и выберите 'Копировать'");
+    }
+}
+
+function showToast() {
     const t = document.getElementById('toast');
     t.style.display='block'; setTimeout(()=>t.style.display='none', 2000);
 }
