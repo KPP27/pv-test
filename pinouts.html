@@ -81,10 +81,10 @@ const pinouts = [
     { id: 8, title: "LuxPower (Червоні діпи) ↔ Pylontech NEW", m: "LuxPower", s: "Pylontech NEW", links: [[3,5,'CAN-L'],[4,4,'CAN-H']], m_null:[1,2,5,6,7,8], s_null:[1,2,3], m_colors:{3:'#0056b3', 4:'#0056b3'}, s_colors:{4:'#0056b3', 5:'#0056b3'} },
     { id: 9, title: "LuxPower (Червоні діпи) ↔ Pylontech US2000/3000", m: "LuxPower", s: "Pylontech", links: [[3,5,'CAN-L'],[4,4,'CAN-H']], m_null:[1,2,5,6,7,8], m_colors:{3:'#0056b3', 4:'#0056b3'}, s_colors:{4:'#0056b3', 5:'#0056b3'} },
     { id: 10, title: "LuxPower (Червоні діпи) ↔ Dyness", m: "LuxPower", s: "Dyness", links: [[3,5,'CAN-L'],[4,4,'CAN-H']], m_null:[1,2,5,6,7,8], m_colors:{3:'#0056b3', 4:'#0056b3'}, s_colors:{4:'#0056b3', 5:'#0056b3'} },
-    { id: 11, title: "Sungrow ↔ Sungrow", m: "Sungrow Inv", s: "Sungrow Bat", links: [[4,4,'CAN-H'],[5,5,'CAN-L']], m_colors:{4:'#0056b3', 5:'#0056b3'}, s_colors:{4:'#0056b3', 5:'#0056b3'} },
-    { id: 12, title: "Sofar Inverter ↔ Sofar BTS Battery", m: "Sofar (16-pin)", s: "Sofar BTS (RJ45)", m_pins: 16, links: [[7,4,'CAN-H'],[8,5,'CAN-L']], m_null:[1,2,3,4,5,6,9,10,11,12,13,14,15,16], m_colors:{7:'#0056b3', 8:'#0056b3'} }
+    { id: 11, title: "Sungrow ↔ Sungrow (RJ45)", m: "Sungrow Inv", s: "Sungrow Bat", links: [[4,4,'CAN-H'],[5,5,'CAN-L']], m_colors:{4:'#0056b3', 5:'#0056b3'}, s_colors:{4:'#0056b3', 5:'#0056b3'} },
+    { id: 12, title: "Sungrow ↔ Sungrow (COM Terminal)", m: "Sungrow (10-pin)", s: "Sungrow (RJ45)", m_pins: 10, links: [[6,4,'CAN-H'],[7,5,'CAN-L']], m_null:[1,2,3,4,5,8,9,10], m_colors:{6:'#0056b3', 7:'#0056b3'} },
+    { id: 13, title: "Sofar Inverter ↔ Sofar BTS Battery", m: "Sofar (16-pin)", s: "Sofar BTS (RJ45)", m_pins: 16, links: [[7,4,'CAN-H'],[8,5,'CAN-L']], m_null:[1,2,3,4,5,6,9,10,11,12,13,14,15,16], m_colors:{7:'#0056b3', 8:'#0056b3'} }
 ];
-
 const stdCols = ["", "#FF8C00", "#FF8C00", "#32CD32", "#0056b3", "#0056b3", "#32CD32", "#8B4513", "#8B4513"];
 const stdStriped = [false, true, false, true, false, true, false, true, false];
 
@@ -165,13 +165,9 @@ function drawConn(id, side, data) {
             h += `<rect width="110" height="26" fill="none" stroke="#ddd" stroke-dasharray="2,2" rx="3"/><text x="55" y="14" font-family="Arial" font-size="10" fill="#bbb" text-anchor="middle" dominant-baseline="middle">NULL</text>`;
         } else {
             h += `<rect width="110" height="26" fill="${customs[i] || stdCols[i] || '#eee'}" rx="3"/>`;
-            
             if(isL || (customs[i] === undefined && stdStriped[i])) {
-                // Удлиненный путь path (добавлено больше сегментов M/L), чтобы штриховка была на всю ширину (110px)
-                h += `<g clip-path="url(#cp-${id})">
-                        <path d="M-10 30 L10 -10 M10 30 L30 -10 M30 30 L50 -10 M50 30 L70 -10 M70 30 L90 -10 M90 30 L110 -10 M110 30 L130 -10" 
-                              stroke="white" stroke-width="5" opacity="0.6"/>
-                      </g>`;
+                // ИСПРАВЛЕННЫЙ ПУТЬ: Добавлено больше сегментов, чтобы покрыть 110px ширины полностью
+                h += `<g clip-path="url(#cp-${id})"><path d="M-10 30 L10 -10 M10 30 L30 -10 M30 30 L50 -10 M50 30 L70 -10 M70 30 L90 -10 M90 30 L110 -10 M110 30 L130 -10" stroke="white" stroke-width="6" opacity="0.7"/></g>`;
             }
         }
         h += `<text x="${side==='m'?-25:135}" y="14" font-family="Arial" font-size="12" font-weight="bold" fill="#666" text-anchor="middle" dominant-baseline="middle">${i}</text></g>`;
