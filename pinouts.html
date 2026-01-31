@@ -1,57 +1,167 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-0JQD4RVE06"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-0JQD4RVE06');
+    </script>
+      
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>BMS Connector Guide</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BMS Pinout Guide</title>
+
     <style>
-        :root { --accent: #007bff; --bg: #f8f9fa; --dark: #343a40; }
-        body { font-family: -apple-system, sans-serif; background: var(--bg); margin: 0; padding: 10px; display: flex; flex-direction: column; align-items: center; }
-        .container { max-width: 650px; width: 100%; }
-        
-        .acc-item { background: #fff; border: 1px solid #dee2e6; border-radius: 8px; margin-bottom: 12px; overflow: hidden; }
-        .acc-header { padding: 16px; cursor: pointer; display: flex; justify-content: space-between; font-weight: bold; color: var(--dark); }
-        .acc-item.open .acc-header { background: #f1f3f5; border-bottom: 1px solid #dee2e6; }
-        
-        .acc-content { display: none; padding: 10px; text-align: center; background: #fff; }
+        :root {
+            --bg: #f5f5f5;
+            --card-bg: #ffffff;
+            --text: #222;
+            --accent: #2a8cff; /* Тот самый синий */
+            --border: #ddd;
+            --shadow: 0 4px 20px rgba(0,0,0,0.1);
+            --radius: 14px;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, Arial, sans-serif;
+            background: var(--bg);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            max-width: 420px;
+            width: 100%;
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+        }
+
+        .menu {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .menu-btn {
+            flex: 1;
+            padding: 10px 5px;
+            font-size: 13px;
+            background: #f0f0f0;
+            color: var(--text);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .menu-btn.active {
+            background: var(--accent);
+            color: white;
+            border-color: var(--accent);
+        }
+
+        h2 { margin: 0 0 15px 0; font-size: 1.2rem; text-align: center; }
+
+        /* Стили аккордеона в вашем стиле */
+        .acc-item { 
+            border: 1px solid var(--border); 
+            border-radius: 10px; 
+            margin-bottom: 10px; 
+            overflow: hidden;
+            transition: 0.3s;
+        }
+
+        .acc-header { 
+            padding: 12px 15px; 
+            cursor: pointer; 
+            background: #fafafa;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text);
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .acc-item.open { border-color: var(--accent); box-shadow: 0 2px 8px rgba(42,140,255,0.1); }
+        .acc-item.open .acc-header { background: white; color: var(--accent); }
+
+        .acc-content { display: none; padding: 10px; text-align: center; border-top: 1px solid #eee; }
         .acc-item.open .acc-content { display: block; }
 
-        .svg-wrap { position: relative; width: 100%; border: 1px solid #eee; background: white; line-height: 0; }
-        svg { width: 100%; height: auto; display: block; }
-        
-        /* Слой для мобильных: картинка поверх SVG для системных жестов */
+        .svg-wrap { position: relative; width: 100%; background: white; line-height: 0; }
         .img-overlay { width: 100%; height: auto; display: block; }
-        .hidden-svg { display: none; }
+        
+        /* Кнопка копирования как в калькуляторе */
+        .copy-btn {
+            width: 100%;
+            margin-top: 12px;
+            padding: 12px;
+            border-radius: 12px;
+            background: #28a745;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 14px;
+            transition: 0.2s;
+        }
+        .copy-btn:active { transform: scale(0.98); }
+        .copy-btn.copied { background: #6c757d; }
 
-        .btn-copy { background: #28a745; color: white; border: none; padding: 14px; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 15px; width: 100%; font-size: 16px; display: none; }
-        
-        .hint-ios { background: #e9ecef; color: #495057; padding: 10px; border-radius: 6px; margin-top: 10px; font-size: 14px; font-weight: 500; display: none; border: 1px dashed #ced4da; }
-        
-        .toast { position: fixed; bottom: 20px; background: rgba(0,0,0,0.9); color: white; padding: 10px 20px; border-radius: 25px; display: none; z-index: 1000; }
+        .hint-ios { 
+            background: #f8f9fa; 
+            color: #666; 
+            padding: 10px; 
+            border-radius: 10px; 
+            margin-top: 10px; 
+            font-size: 12px; 
+            border: 1px dashed var(--border); 
+        }
+
+        .toast { 
+            position: fixed; bottom: 30px; background: rgba(0,0,0,0.8); 
+            color: white; padding: 10px 20px; border-radius: 20px; 
+            font-size: 14px; display: none; z-index: 100;
+        }
     </style>
 </head>
 <body>
 
-<div class="container" id="accordion"></div>
-<div id="toast" class="toast">✅ Скопировано в буфер</div>
+<div class="container">
+    <nav class="menu">
+        <button class="menu-btn" onclick="location.href='index.html'">🔌 Макс. стринг</button>
+        <button class="menu-btn active">🛠 Распиновки</button>
+    </nav>
+
+    <h2 id="main-title">BMS CAN/RS485 Guide</h2>
+
+    <div id="accordion"></div>
+</div>
+
+<div id="toast" class="toast">✅ Скопировано!</div>
 
 <script>
+// Данные распиновок
 const pinouts = [
-    { id: 'p1', title: "1. Пряма вита пара (T568B)", m: "MASTER", s: "SLAVE", links: [[1,1],[2,2],[3,3],[4,4],[5,5],[6,6],[7,7],[8,8]] },
-    { id: 'p2', title: "2. LuxPower / Deye / Solis ↔ Dyness", m: "Inverter", s: "Dyness", links: [[1,1],[2,2],[3,3],[4,4,'CAN-H'],[5,5,'CAN-L'],[6,6],[7,7],[8,8]] },
-    { id: 'p3', title: "3. LuxPower / Deye / Solis ↔ Pylontech NEW", m: "Inverter", s: "Pylontech", links: [[1,1],[2,2],[3,3],[4,4,'CAN-H'],[5,5,'CAN-L'],[6,6],[7,7],[8,8]], s_null: [1,2,3] },
-    { id: 'p5', title: "5. Victron GX ↔ Pylontech NEW", m: "Victron GX", s: "Pylontech", links: [[3,6,'GND'],[7,4,'CAN-H'],[8,5,'CAN-L']], m_null: [1,2,4,5,6], s_null: [1,2,3], m_colors: {3:'#32CD32', 7:'#0056b3', 8:'#0056b3'}, s_colors: {6:'#32CD32', 4:'#0056b3', 5:'#0056b3'} },
-    { id: 'p6', title: "6. Victron GX ↔ Pylontech US2000/3000", m: "Victron GX", s: "Pylontech", links: [[3,2,'GND'],[7,4,'CAN-H'],[8,5,'CAN-L']], m_null: [1,2,4,5,6], m_colors: {3:'#FF8C00', 7:'#0056b3', 8:'#0056b3'}, s_colors: {2:'#FF8C00', 4:'#0056b3', 5:'#0056b3'} },
-    { id: 'p8', title: "8. LuxPower (Красные дипы) ↔ Pylontech NEW", m: "LuxPower", s: "Pylontech", links: [[3,5,'CAN-L'],[4,4,'CAN-H']], m_null: [1,2,5,6,7,8], s_null: [1,2,3], m_colors: {3:'#0056b3', 4:'#0056b3'}, s_colors: {4:'#0056b3', 5:'#0056b3'} },
-    { id: 'p11', title: "11. Sungrow ↔ Sungrow", m: "Sungrow Inv", s: "Sungrow Bat", links: [[1,1],[2,2],[3,3],[4,4,'CAN-H'],[5,5,'CAN-L'],[6,6],[7,7],[8,8]], m_colors: {4:'#0056b3', 5:'#0056b3'}, s_colors: {4:'#0056b3', 5:'#0056b3'} }
+    { id: 1, title: "Прямая витая пара (T568B)", m: "MASTER", s: "SLAVE", links: [[1,1],[2,2],[3,3],[4,4],[5,5],[6,6],[7,7],[8,8]] },
+    { id: 2, title: "LuxPower / Deye / Solis ↔ Dyness", m: "Inverter", s: "Dyness", links: [[1,1],[2,2],[3,3],[4,4,'CAN-H'],[5,5,'CAN-L'],[6,6],[7,7],[8,8]] },
+    { id: 3, title: "LuxPower / Deye / Solis ↔ Pylontech NEW", m: "Inverter", s: "Pylontech", links: [[1,1],[2,2],[3,3],[4,4,'CAN-H'],[5,5,'CAN-L'],[6,6],[7,7],[8,8]], s_null: [1,2,3] },
+    { id: 5, title: "Victron GX ↔ Pylontech NEW", m: "Victron GX", s: "Pylontech", links: [[3,6,'GND'],[7,4,'CAN-H'],[8,5,'CAN-L']], m_null: [1,2,4,5,6], s_null: [1,2,3], m_colors: {3:'#32CD32', 7:'#0056b3', 8:'#0056b3'}, s_colors: {6:'#32CD32', 4:'#0056b3', 5:'#0056b3'} }
+    // ... сюда можно добавить остальные 11 распиновок
 ];
 
 const stdColors = ["", "#FF8C00", "#FF8C00", "#32CD32", "#0056b3", "#0056b3", "#32CD32", "#8B4513", "#8B4513"];
 const stdStriped = [false, true, false, true, false, true, false, true, false];
 
 const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-const isAndroid = /Android/i.test(navigator.userAgent);
-const isPC = !isIOS && !isAndroid;
+const isPC = !isIOS && !/Android/i.test(navigator.userAgent);
 
 function init() {
     const acc = document.getElementById('accordion');
@@ -59,14 +169,17 @@ function init() {
         const item = document.createElement('div');
         item.className = 'acc-item';
         item.innerHTML = `
-            <div class="acc-header" onclick="toggle('${p.id}')">${p.title}</div>
+            <div class="acc-header" onclick="toggle(${p.id})">
+                <span>${p.title}</span>
+                <span>▼</span>
+            </div>
             <div class="acc-content" id="c-${p.id}">
                 <div class="svg-wrap">
                     <img class="img-overlay" id="img-${p.id}">
-                    <div id="svg-${p.id}" class="hidden-svg"></div>
+                    <div id="svg-${p.id}" style="display:none"></div>
                 </div>
-                <button class="btn-copy" id="btn-${p.id}" onclick="copyToClipboard('${p.id}')">Скопировать схему</button>
-                <div class="hint-ios" id="hint-${p.id}">👆 Зажмите схему для копирования</div>
+                ${isPC ? `<button class="copy-btn" id="btn-${p.id}" onclick="copyImg(${p.id})">📋 Скопировать схему</button>` : ''}
+                ${isIOS ? `<div class="hint-ios">👆 Зажмите схему для копирования</div>` : ''}
             </div>
         `;
         acc.appendChild(item);
@@ -74,16 +187,10 @@ function init() {
 }
 
 function toggle(id) {
-    const parent = document.getElementById(`c-${id}`).parentElement;
-    const isOpen = parent.classList.contains('open');
+    const cont = document.getElementById(`c-${id}`).parentElement;
+    const isOpen = cont.classList.contains('open');
     document.querySelectorAll('.acc-item').forEach(i => i.classList.remove('open'));
-    if(!isOpen) { 
-        parent.classList.add('open'); 
-        draw(id); 
-        // Показываем нужные контролы
-        if(isPC) document.getElementById(`btn-${id}`).style.display = 'block';
-        if(isIOS) document.getElementById(`hint-${id}`).style.display = 'block';
-    }
+    if(!isOpen) { cont.classList.add('open'); draw(id); }
 }
 
 function draw(id) {
@@ -94,18 +201,17 @@ function draw(id) {
     const getPinY = (idx) => 105 + 8 + (idx - 1) * 36 + 13;
 
     target.innerHTML = `
-        <svg id="raw-${id}" viewBox="0 0 800 420" xmlns="http://www.w3.org/2000/svg" style="background:white">
-            <defs><clipPath id="cp-${id}"><rect width="90" height="26" rx="2"/></clipPath></defs>
+        <svg id="raw-${id}" viewBox="0 0 800 420" xmlns="http://www.w3.org/2000/svg">
             <rect width="800" height="420" fill="white"/>
-            <rect width="800" height="50" fill="#343a40"/>
-            <text x="400" y="25" font-family="Arial" font-size="18" font-weight="bold" text-anchor="middle" fill="white" dominant-baseline="middle">${data.title}</text>
-            <text x="180" y="85" font-family="Arial" font-size="15" font-weight="bold" text-anchor="middle" fill="#007bff" dominant-baseline="middle">${data.m}</text>
-            <text x="620" y="85" font-family="Arial" font-size="15" font-weight="bold" text-anchor="middle" fill="#007bff" dominant-baseline="middle">${data.s}</text>
+            <rect width="800" height="50" fill="#f8f9fa"/>
+            <text x="400" y="30" font-family="Arial" font-size="18" font-weight="bold" text-anchor="middle" fill="#2a8cff">${data.title}</text>
+            
+            <text x="180" y="85" font-family="Arial" font-size="15" font-weight="bold" text-anchor="middle" fill="#666">${data.m}</text>
+            <text x="620" y="85" font-family="Arial" font-size="15" font-weight="bold" text-anchor="middle" fill="#666">${data.s}</text>
             <g id="lines-${id}"></g>
-            <g transform="translate(130, 105)">${drawConn('m', data)}</g>
-            <g transform="translate(570, 105)">${drawConn('s', data)}</g>
-        </svg>
-    `;
+            <g transform="translate(130, 105)">${drawConn(id, 'm', data)}</g>
+            <g transform="translate(570, 105)">${drawConn(id, 's', data)}</g>
+        </svg>`;
 
     const linesG = document.getElementById(`lines-${id}`);
     data.links.forEach(l => {
@@ -118,20 +224,15 @@ function draw(id) {
         p.setAttribute("fill", "none");
         if(stdStriped[l[0]]) p.setAttribute("stroke-dasharray", "12,6");
         linesG.appendChild(p);
-
-        if(l[2]) {
-            addLabel(id, l[2], 'm', y1);
-            addLabel(id, l[2], 's', y2);
-        }
+        if(l[2]) { addLabel(id, l[2], 'm', y1); addLabel(id, l[2], 's', y2); }
     });
     render(id);
 }
 
-function drawConn(side, data) {
+function drawConn(id, side, data) {
     let h = `<rect width="100" height="295" fill="#f8f9fa" stroke="#ccc" rx="2"/>`;
     const nulls = (side === 'm' ? data.m_null : data.s_null) || [];
     const customs = (side === 'm' ? data.m_colors : data.s_colors) || {};
-
     for(let i=1; i<=8; i++) {
         const y = 8 + (i-1)*36;
         const color = customs[i] || stdColors[i];
@@ -143,10 +244,10 @@ function drawConn(side, data) {
         } else {
             h += `<rect width="90" height="26" fill="${color}" rx="2"/>`;
             if(stdStriped[i] && !customs[i]) {
-                h += `<g clip-path="url(#cp-${data.id})"><path d="M-10 30 L10 -10 M15 30 L35 -10 M40 30 L60 -10 M65 30 L85 -10 M90 30 L110 -10" stroke="white" stroke-width="6" opacity="0.7"/></g>`;
+                h += `<path d="M0 26 L26 0 M10 26 L36 0 M20 26 L46 0" stroke="white" stroke-width="5" opacity="0.5"/>`;
             }
         }
-        h += `<text x="${side==='m'?-15:105}" y="13" font-family="Arial" font-size="13" font-weight="bold" fill="#666" text-anchor="middle" dominant-baseline="central">${i}</text>`;
+        h += `<text x="${side==='m'?-15:105}" y="13" font-family="Arial" font-size="12" font-weight="bold" fill="#444" text-anchor="middle" dominant-baseline="central">${i}</text>`;
         h += `</g>`;
     }
     return h;
@@ -154,7 +255,7 @@ function drawConn(side, data) {
 
 function addLabel(id, txt, side, y) {
     const t = document.createElementNS("http://www.w3.org/2000/svg", "text");
-    t.setAttribute("x", side === 'm' ? 110 : 690);
+    t.setAttribute("x", side === 'm' ? 115 : 685);
     t.setAttribute("y", y);
     t.setAttribute("font-family", "Arial"); t.setAttribute("font-size", "12"); t.setAttribute("font-weight", "bold");
     t.setAttribute("text-anchor", side === 'm' ? "end" : "start");
@@ -171,7 +272,6 @@ function render(id) {
     const xml = new XMLSerializer().serializeToString(svg);
     const img = new Image();
     const url = URL.createObjectURL(new Blob([xml], {type:'image/svg+xml;charset=utf-8'}));
-
     img.onload = function() {
         canvas.width = 800; canvas.height = 420;
         ctx.fillStyle = "white"; ctx.fillRect(0,0,800,420);
@@ -183,14 +283,23 @@ function render(id) {
     img.src = url;
 }
 
-async function copyToClipboard(id) {
+async function copyImg(id) {
     const canvas = window[`blob_${id}`];
-    if (!canvas) return;
+    const data = pinouts.find(x => x.id === id);
     canvas.toBlob(async (blob) => {
-        const item = new ClipboardItem({ "image/png": blob });
-        await navigator.clipboard.write([item]);
-        const t = document.getElementById('toast');
-        t.style.display='block'; setTimeout(()=>t.style.display='none', 2000);
+        try {
+            // При копировании добавляем номер в начало названия
+            const item = new ClipboardItem({ "image/png": blob });
+            await navigator.clipboard.write([item]);
+            
+            const btn = document.getElementById(`btn-${id}`);
+            btn.textContent = "✅ Распиновка " + id + " скопирована!";
+            btn.classList.add("copied");
+            setTimeout(() => {
+                btn.textContent = "📋 Скопировать схему";
+                btn.classList.remove("copied");
+            }, 2000);
+        } catch (e) { alert("Ошибка копирования"); }
     });
 }
 
