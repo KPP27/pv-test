@@ -88,6 +88,10 @@ function draw(id) {
     const target = document.getElementById(`svg-${id}`);
     if(target.innerHTML !== "") return;
 
+    // Единая функция расчета центральной оси для каждого пина
+    // 105 - отступ группы коннектора, 8 - внутренний отступ, 13 - половина высоты пина
+    const getPinCenterY = (idx) => 105 + 8 + (idx - 1) * 36 + 13;
+
     target.innerHTML = `
         <svg id="raw-${id}" viewBox="0 0 800 420" xmlns="http://www.w3.org/2000/svg">
             <defs><clipPath id="cp-${id}"><rect width="90" height="26" rx="3"/></clipPath></defs>
@@ -104,9 +108,10 @@ function draw(id) {
 
     const linesG = document.getElementById(`lines-${id}`);
     data.links.forEach(l => {
-        const y1 = 105 + 8 + (l[0]-1)*36 + 13;
-        const y2 = 105 + 8 + (l[1]-1)*36 + 13;
+        const y1 = getPinCenterY(l[0]);
+        const y2 = getPinCenterY(l[1]);
         const color = (data.m_colors && data.m_colors[l[0]]) || stdColors[l[0]];
+        
         const p = document.createElementNS("http://www.w3.org/2000/svg", "path");
         p.setAttribute("d", `M 230 ${y1} C 400 ${y1}, 400 ${y2}, 570 ${y2}`);
         p.setAttribute("stroke", color);
@@ -115,9 +120,10 @@ function draw(id) {
         if(stdStriped[l[0]]) p.setAttribute("stroke-dasharray", "10,5");
         linesG.appendChild(p);
 
+        // Теперь передаем y1 и y2 напрямую, чтобы текст сел точно на ось
         if(l[2]) {
-            addSignalLabel(id, l[0], l[2], 'm', y1);
-            addSignalLabel(id, l[1], l[2], 's', y2);
+            addSignalLabel(id, l[2], 'm', y1);
+            addSignalLabel(id, l[2], 's', y2);
         }
     });
     finalize(id);
@@ -130,14 +136,14 @@ function drawConn(side, data) {
 
     for(let i=1; i<=8; i++) {
         const y = 8 + (i-1)*36;
-        const centerY = y + 13;
+        const centerYInside = 13; // Центр относительно группы пина
         const isNull = nulls.includes(i);
         const color = customColors[i] || stdColors[i];
 
         h += `<g transform="translate(5, ${y})">`;
         if(isNull) {
             h += `<rect width="90" height="26" fill="none" stroke="#ccc" stroke-dasharray="2,2" rx="3"/>`;
-            h += `<text x="45" y="18" font-family="Arial" font-size="9" font-weight="bold" fill="#aaa" text-anchor="middle">NULL</text>`;
+            h += `<text x="45" y="${centerYInside}" font-family="Arial" font-size="9" font-weight="bold" fill="#aaa" text-anchor="middle" dominant-baseline="central">NULL</text>`;
         } else {
             h += `<rect width="90" height="26" fill="${color}" rx="3"/>`;
             if(stdStriped[i] && !customColors[i]) {
@@ -146,26 +152,30 @@ function drawConn(side, data) {
                       </g>`;
             }
         }
+        // Номер пина теперь тоже центрируется через dominant-baseline
         const textX = (side === 'm') ? -15 : 105;
-        h += `<text x="${textX}" y="18" font-family="Arial" font-size="13" font-weight="bold" fill="#666" text-anchor="middle" dominant-baseline="central">${i}</text>`;
+        h += `<text x="${textX}" y="${centerYInside}" font-family="Arial" font-size="13" font-weight="bold" fill="#666" text-anchor="middle" dominant-baseline="central">${i}</text>`;
         h += `</g>`;
     }
     return h;
 }
 
-function addSignalLabel(id, idx, txt, side, centerY) {
+function addSignalLabel(id, txt, side, centerY) {
     const target = document.getElementById(`raw-${id}`);
-    const x = (side === 'm') ? 115 : 685;
+    const x = (side === 'm') ? 105 : 695; // Позиция текста сигнала
+    
     const t = document.createElementNS("http://www.w3.org/2000/svg", "text");
-    t.setAttribute("x", x); t.setAttribute("y", centerY);
-    t.setAttribute("font-family", "Arial"); t.setAttribute("font-size", "12"); t.setAttribute("font-weight", "bold");
+    t.setAttribute("x", x);
+    t.setAttribute("y", centerY);
+    t.setAttribute("font-family", "Arial");
+    t.setAttribute("font-size", "12");
+    t.setAttribute("font-weight", "bold");
     t.setAttribute("text-anchor", (side === 'm') ? "end" : "start");
     t.setAttribute("fill", "#d9534f");
-    t.setAttribute("dominant-baseline", "central");
+    t.setAttribute("dominant-baseline", "central"); // Ключевое свойство для выравнивания по оси
     t.textContent = txt;
     target.appendChild(t);
 }
-
 function finalize(id) {
     const svg = document.getElementById(`raw-${id}`);
     const canvas = document.createElement('canvas');
