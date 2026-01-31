@@ -107,22 +107,26 @@
             position: fixed;
             z-index: 10000;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.9);
-            justify-content: center; align-items: center;
-            cursor: zoom-out;
+            background: rgba(0,0,0,0.95);
+            overflow: hidden; /* Чтобы картинка не вылезала за края */
+            touch-action: none; /* Отключает стандартное поведение браузера */
         }
-        .modal img {
-            max-width: 95%;
-            max-height: 95%;
-            transform: scale(1.5); /* Начальное увеличение */
-            object-fit: contain;
+        #modalImg {
+            position: absolute;
+            width: 100%;
+            height: auto;
+            transition: transform 0.1s ease-out; /* Плавность движения */
+            cursor: grab;
+            user-select: none;
+            -webkit-user-drag: none;
         }
     </style>
 </head>
 <body>
 
-    <div id="zoomModal" class="modal" onclick="this.style.display='none'">
-    <img id="modalImg">
+    <div id="zoomModal" class="modal">
+    <div style="position:absolute; top:20px; right:20px; color:white; z-index:10001; font-size:30px; font-weight:bold;" onclick="closeModal()">×</div>
+    <img id="modalImg" src="">
 </div>
     
 <div class="container">
@@ -286,10 +290,55 @@ async function copyImg(id) {
     });
 }
 init();
-    function zoomIn(src) {
+    let scale = 1, moveX = 0, moveY = 0;
+let evCache = [];
+let prevDiff = -1;
+
+function zoomIn(src) {
     const modal = document.getElementById('zoomModal');
-    document.getElementById('modalImg').src = src;
+    const img = document.getElementById('modalImg');
+    img.src = src;
+    scale = 1; moveX = 0; moveY = 0; // Сброс при открытии
+    updateTransform();
     modal.style.display = 'flex';
+}
+
+function closeModal() {
+    document.getElementById('zoomModal').style.display = 'none';
+}
+
+const img = document.getElementById('modalImg');
+
+// Логика движения и зума
+img.onpointerdown = e => { evCache.push(e); };
+img.onpointermove = e => {
+    const index = evCache.findIndex(ev => ev.pointerId === e.pointerId);
+    evCache[index] = e;
+
+    // Зум двумя пальцами (Pinch)
+    if (evCache.length === 2) {
+        const curDiff = Math.hypot(evCache[0].clientX - evCache[1].clientX, evCache[0].clientY - evCache[1].clientY);
+        if (prevDiff > 0) {
+            scale += (curDiff - prevDiff) * 0.01;
+            scale = Math.min(Math.max(1, scale), 4); // Ограничение зума от 1x до 4x
+        }
+        prevDiff = curDiff;
+    } 
+    // Движение одним пальцем
+    else if (evCache.length === 1 && scale > 1) {
+        moveX += e.movementX;
+        moveY += e.movementY;
+    }
+    updateTransform();
+};
+
+img.onpointerup = img.onpointerleave = e => {
+    evCache = evCache.filter(ev => ev.pointerId !== e.pointerId);
+    if (evCache.length < 2) prevDiff = -1;
+};
+
+function updateTransform() {
+    img.style.transform = `translate(${moveX}px, ${moveY}px) scale(${scale})`;
 }
 </script>
 </body>
