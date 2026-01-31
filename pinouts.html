@@ -110,6 +110,8 @@ function drawConn(side, id) {
     for(let i=1; i<=8; i++) {
         const y = 8 + (i-1)*36;
         const color = colors[i];
+        const centerY = y + 13; // Ровно середина пина (высота пина 26 / 2)
+
         h += `<g transform="translate(5, ${y})">`;
         h += `<rect width="90" height="26" fill="${color}" rx="3"/>`;
         if(striped[i]) {
@@ -117,23 +119,31 @@ function drawConn(side, id) {
                     <path d="M-10 30 L10 -10 M15 30 L35 -10 M40 30 L60 -10 M65 30 L85 -10 M90 30 L110 -10" stroke="white" stroke-width="6" opacity="0.8"/>
                   </g>`;
         }
-        h += `<text x="${side === 'm' ? -15 : 105}" y="18" font-family="Arial" font-size="13" font-weight="bold" fill="#666" text-anchor="middle">${i}</text>`;
-        h += `</g>`;
+        h += `</g>`; // Закрываем группу пина
+
+        // Номер пина: на оси centerY
+        const pinNumX = (side === 'm') ? -10 : 110;
+        h += `<text x="${pinNumX}" y="${centerY}" font-family="Arial" font-size="13" font-weight="bold" fill="#666" text-anchor="middle" dominant-baseline="central">${i}</text>`;
     }
     return h;
 }
 
 function addSignalLabel(id, idx, txt, side) {
     const target = document.getElementById(`raw-${id}`);
-    const x = (side === 'm') ? 110 : 690;
-    // Смещение y: +18 (центр пина) + 10 (чуть ниже центра)
-    const y = 105 + 8 + (idx - 1) * 36 + 28; 
+    const centerY = 105 + 8 + (idx - 1) * 36 + 13; // Та же ось, что у пина
+    
+    // Смещение текста: чуть дальше от номера пина
+    const x = (side === 'm') ? 85 : 715;
 
     const t = document.createElementNS("http://www.w3.org/2000/svg", "text");
-    t.setAttribute("x", x); t.setAttribute("y", y);
-    t.setAttribute("font-family", "Arial"); t.setAttribute("font-size", "12"); t.setAttribute("font-weight", "bold");
+    t.setAttribute("x", x);
+    t.setAttribute("y", centerY);
+    t.setAttribute("font-family", "Arial");
+    t.setAttribute("font-size", "13");
+    t.setAttribute("font-weight", "bold");
     t.setAttribute("text-anchor", (side === 'm') ? "end" : "start");
     t.setAttribute("fill", "#d9534f");
+    t.setAttribute("dominant-baseline", "central"); // Центрирование по оси
     t.textContent = txt;
     target.appendChild(t);
 }
