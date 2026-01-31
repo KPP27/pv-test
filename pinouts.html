@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>BMS Pro Pinouts</title>
+    <title>BMS Master List</title>
     <style>
         :root { --accent: #007bff; --bg: #f8f9fa; --dark: #343a40; }
         body { font-family: -apple-system, sans-serif; background: var(--bg); margin: 0; padding: 10px; display: flex; flex-direction: column; align-items: center; }
@@ -28,9 +28,13 @@
 <script>
 const pinouts = [
     { id: 'str', title: "Пряма вита пара (T568B)", m: "MASTER", s: "SLAVE", links: [[1,1],[2,2],[3,3],[4,4],[5,5],[6,6],[7,7],[8,8]] },
-    { id: 'ld_pyl', title: "Deye / LuxPower ↔ Pylontech NEW", m: "Inverter", s: "Battery", links: [[4,4,'CAN-H'], [5,5,'CAN-L']] },
-    { id: 'vic_pyl', title: "Victron GX ↔ Pylontech NEW", m: "Victron GX", s: "Pylontech", links: [[7,4,'CAN-H'], [8,5,'CAN-L'], [3,3,'GND']] },
-    { id: 'ld_dyn', title: "Deye / LuxPower ↔ Dyness", m: "Inverter", s: "Battery", links: [[4,1,'CAN-H'], [5,2,'CAN-L']] }
+    { id: 'ld_dyn', title: "Deye / LuxPower / Solis ↔ Dyness", m: "Inverter", s: "Dyness", links: [[4,1,'CAN-H'], [5,2,'CAN-L']] },
+    { id: 'ld_pyl_new', title: "Deye / LuxPower / Solis ↔ Pylontech NEW", m: "Inverter", s: "Pylontech", links: [[4,4,'CAN-H'], [5,5,'CAN-L']] },
+    { id: 'ld_pyl_old', title: "Deye / LuxPower / Solis ↔ Pylontech US2000/3000", m: "Inverter", s: "Pylontech", links: [[4,4,'CAN-H'], [5,5,'CAN-L']] },
+    { id: 'vic_pyl_new', title: "Victron GX ↔ Pylontech NEW", m: "Victron GX", s: "Pylontech", links: [[7,4,'CAN-H'], [8,5,'CAN-L'], [3,3,'GND']] },
+    { id: 'vic_pyl_old', title: "Victron GX ↔ Pylontech US2000/3000", m: "Victron GX", s: "Pylontech", links: [[7,4,'CAN-H'], [8,5,'CAN-L'], [3,2,'GND']] },
+    { id: 'vic_dyn', title: "Victron GX ↔ Dyness", m: "Victron GX", s: "Dyness", links: [[7,1,'CAN-H'], [8,2,'CAN-L'], [3,3,'GND']] },
+    { id: 'sof_sof', title: "Sofar ↔ Sofar BTS (CAN)", m: "Inverter", s: "Battery", links: [[4,4,'CAN-H'], [5,5,'CAN-L']] }
 ];
 
 const colors = ["", "#FF8C00", "#FF8C00", "#32CD32", "#0056b3", "#0056b3", "#32CD32", "#8B4513", "#8B4513"];
@@ -70,16 +74,12 @@ function draw(id) {
 
     target.innerHTML = `
         <svg id="raw-${id}" viewBox="0 0 800 420" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-                <clipPath id="cp-${id}"><rect width="100" height="26" rx="3"/></clipPath>
-            </defs>
+            <defs><clipPath id="cp-${id}"><rect width="100" height="26" rx="3"/></clipPath></defs>
             <rect width="800" height="420" fill="white"/>
             <rect width="800" height="50" fill="#343a40"/>
             <text x="400" y="32" font-family="Arial" font-size="20" font-weight="bold" text-anchor="middle" fill="white">${data.title}</text>
-            
             <text x="180" y="85" font-family="Arial" font-size="16" font-weight="bold" text-anchor="middle" fill="#007bff">${data.m}</text>
             <text x="620" y="85" font-family="Arial" font-size="16" font-weight="bold" text-anchor="middle" fill="#007bff">${data.s}</text>
-
             <g id="lines-${id}"></g>
             <g transform="translate(130, 105)">${drawConn('m', id)}</g>
             <g transform="translate(570, 105)">${drawConn('s', id)}</g>
@@ -90,7 +90,6 @@ function draw(id) {
     data.links.forEach(l => {
         const y1 = 121 + (l[0]-1)*36, y2 = 121 + (l[1]-1)*36;
         const p = document.createElementNS("http://www.w3.org/2000/svg", "path");
-        // Линии теперь короче, изгиб плавнее
         p.setAttribute("d", `M 230 ${y1} C 400 ${y1}, 400 ${y2}, 570 ${y2}`);
         p.setAttribute("stroke", colors[l[0]]);
         p.setAttribute("stroke-width", "5");
@@ -118,9 +117,7 @@ function drawConn(side, id) {
                     <path d="M-10 30 L10 -10 M15 30 L35 -10 M40 30 L60 -10 M65 30 L85 -10 M90 30 L110 -10" stroke="white" stroke-width="6" opacity="0.8"/>
                   </g>`;
         }
-        // Пины слева для левого, справа для правого
-        const textX = (side === 'm') ? -15 : 105;
-        h += `<text x="${textX}" y="18" font-family="Arial" font-size="13" font-weight="bold" fill="#666" text-anchor="middle">${i}</text>`;
+        h += `<text x="${side === 'm' ? -15 : 105}" y="18" font-family="Arial" font-size="13" font-weight="bold" fill="#666" text-anchor="middle">${i}</text>`;
         h += `</g>`;
     }
     return h;
@@ -128,22 +125,15 @@ function drawConn(side, id) {
 
 function addSignalLabel(id, idx, txt, side) {
     const target = document.getElementById(`raw-${id}`);
-    // x: 110 для левого (Inverter), 690 для правого (Battery)
     const x = (side === 'm') ? 110 : 690;
-    
-    // Вычисляем y точно так же, как для центра пина: 
-    // Базовый отступ 105 (контейнер) + 8 (внутри коннектора) + (idx-1)*36 + 18 (центр пина)
-    const y = 105 + 8 + (idx - 1) * 36 + 18; 
+    // Смещение y: +18 (центр пина) + 10 (чуть ниже центра)
+    const y = 105 + 8 + (idx - 1) * 36 + 28; 
 
     const t = document.createElementNS("http://www.w3.org/2000/svg", "text");
-    t.setAttribute("x", x);
-    t.setAttribute("y", y);
-    t.setAttribute("font-family", "Arial"); 
-    t.setAttribute("font-size", "14"); // Немного увеличили для читаемости
-    t.setAttribute("font-weight", "bold");
+    t.setAttribute("x", x); t.setAttribute("y", y);
+    t.setAttribute("font-family", "Arial"); t.setAttribute("font-size", "12"); t.setAttribute("font-weight", "bold");
     t.setAttribute("text-anchor", (side === 'm') ? "end" : "start");
-    t.setAttribute("fill", "#333"); // Сделали более спокойным, чем красный
-    t.setAttribute("alignment-baseline", "middle"); // Центровка по вертикали относительно оси
+    t.setAttribute("fill", "#d9534f");
     t.textContent = txt;
     target.appendChild(t);
 }
