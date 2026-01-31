@@ -3,28 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>BMS Pinout Tool</title>
+    <title>BMS Connector Guide</title>
     <style>
         :root { --accent: #007bff; --bg: #f8f9fa; --dark: #343a40; }
         body { font-family: -apple-system, sans-serif; background: var(--bg); margin: 0; padding: 10px; display: flex; flex-direction: column; align-items: center; }
         .container { max-width: 650px; width: 100%; }
         
-        /* Карточки с небольшим скруглением для UI, но само фото будет острым */
         .acc-item { background: #fff; border: 1px solid #dee2e6; border-radius: 8px; margin-bottom: 12px; overflow: hidden; }
-        .acc-header { padding: 16px; cursor: pointer; display: flex; justify-content: space-between; font-weight: bold; color: var(--dark); border-bottom: 1px solid transparent; }
+        .acc-header { padding: 16px; cursor: pointer; display: flex; justify-content: space-between; font-weight: bold; color: var(--dark); }
         .acc-item.open .acc-header { background: #f1f3f5; border-bottom: 1px solid #dee2e6; }
         
         .acc-content { display: none; padding: 10px; text-align: center; background: #fff; }
         .acc-item.open .acc-content { display: block; }
 
-        .svg-wrap { position: relative; width: 100%; border: 1px solid #eee; background: white; }
+        .svg-wrap { position: relative; width: 100%; border: 1px solid #eee; background: white; line-height: 0; }
         svg { width: 100%; height: auto; display: block; }
         
-        /* Слой для iOS (force touch save) */
-        .ios-layer { position: absolute; top:0; left:0; width:100%; height:100%; opacity:0; z-index:10; -webkit-touch-callout: default; }
+        /* Слой для мобильных: картинка поверх SVG для системных жестов */
+        .img-overlay { width: 100%; height: auto; display: block; }
+        .hidden-svg { display: none; }
 
-        .btn-copy { background: #28a745; color: white; border: none; padding: 14px; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 15px; width: 100%; font-size: 16px; }
-        .btn-copy:active { background: #218838; }
+        .btn-copy { background: #28a745; color: white; border: none; padding: 14px; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 15px; width: 100%; font-size: 16px; display: none; }
+        
+        .hint-ios { background: #e9ecef; color: #495057; padding: 10px; border-radius: 6px; margin-top: 10px; font-size: 14px; font-weight: 500; display: none; border: 1px dashed #ced4da; }
         
         .toast { position: fixed; bottom: 20px; background: rgba(0,0,0,0.9); color: white; padding: 10px 20px; border-radius: 25px; display: none; z-index: 1000; }
     </style>
@@ -32,14 +33,13 @@
 <body>
 
 <div class="container" id="accordion"></div>
-<div id="toast" class="toast">✅ Изображение скопировано</div>
+<div id="toast" class="toast">✅ Скопировано в буфер</div>
 
 <script>
 const pinouts = [
     { id: 'p1', title: "1. Пряма вита пара (T568B)", m: "MASTER", s: "SLAVE", links: [[1,1],[2,2],[3,3],[4,4],[5,5],[6,6],[7,7],[8,8]] },
     { id: 'p2', title: "2. LuxPower / Deye / Solis ↔ Dyness", m: "Inverter", s: "Dyness", links: [[1,1],[2,2],[3,3],[4,4,'CAN-H'],[5,5,'CAN-L'],[6,6],[7,7],[8,8]] },
     { id: 'p3', title: "3. LuxPower / Deye / Solis ↔ Pylontech NEW", m: "Inverter", s: "Pylontech", links: [[1,1],[2,2],[3,3],[4,4,'CAN-H'],[5,5,'CAN-L'],[6,6],[7,7],[8,8]], s_null: [1,2,3] },
-    { id: 'p4', title: "4. LuxPower / Deye / Solis ↔ Pylontech US2000/3000", m: "Inverter", s: "Pylontech", links: [[1,1],[2,2],[3,3],[4,4,'CAN-H'],[5,5,'CAN-L'],[6,6],[7,7],[8,8]] },
     { id: 'p5', title: "5. Victron GX ↔ Pylontech NEW", m: "Victron GX", s: "Pylontech", links: [[3,6,'GND'],[7,4,'CAN-H'],[8,5,'CAN-L']], m_null: [1,2,4,5,6], s_null: [1,2,3], m_colors: {3:'#32CD32', 7:'#0056b3', 8:'#0056b3'}, s_colors: {6:'#32CD32', 4:'#0056b3', 5:'#0056b3'} },
     { id: 'p6', title: "6. Victron GX ↔ Pylontech US2000/3000", m: "Victron GX", s: "Pylontech", links: [[3,2,'GND'],[7,4,'CAN-H'],[8,5,'CAN-L']], m_null: [1,2,4,5,6], m_colors: {3:'#FF8C00', 7:'#0056b3', 8:'#0056b3'}, s_colors: {2:'#FF8C00', 4:'#0056b3', 5:'#0056b3'} },
     { id: 'p8', title: "8. LuxPower (Красные дипы) ↔ Pylontech NEW", m: "LuxPower", s: "Pylontech", links: [[3,5,'CAN-L'],[4,4,'CAN-H']], m_null: [1,2,5,6,7,8], s_null: [1,2,3], m_colors: {3:'#0056b3', 4:'#0056b3'}, s_colors: {4:'#0056b3', 5:'#0056b3'} },
@@ -49,6 +49,10 @@ const pinouts = [
 const stdColors = ["", "#FF8C00", "#FF8C00", "#32CD32", "#0056b3", "#0056b3", "#32CD32", "#8B4513", "#8B4513"];
 const stdStriped = [false, true, false, true, false, true, false, true, false];
 
+const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+const isAndroid = /Android/i.test(navigator.userAgent);
+const isPC = !isIOS && !isAndroid;
+
 function init() {
     const acc = document.getElementById('accordion');
     pinouts.forEach(p => {
@@ -57,11 +61,12 @@ function init() {
         item.innerHTML = `
             <div class="acc-header" onclick="toggle('${p.id}')">${p.title}</div>
             <div class="acc-content" id="c-${p.id}">
-                <div class="svg-wrap" id="wrap-${p.id}">
-                    <img class="ios-layer" id="ios-${p.id}">
-                    <div id="svg-${p.id}"></div>
+                <div class="svg-wrap">
+                    <img class="img-overlay" id="img-${p.id}">
+                    <div id="svg-${p.id}" class="hidden-svg"></div>
                 </div>
-                <button class="btn-copy" onclick="copyImage('${p.id}')">Копировать схему</button>
+                <button class="btn-copy" id="btn-${p.id}" onclick="copyToClipboard('${p.id}')">Скопировать схему</button>
+                <div class="hint-ios" id="hint-${p.id}">👆 Зажмите схему для копирования</div>
             </div>
         `;
         acc.appendChild(item);
@@ -72,7 +77,13 @@ function toggle(id) {
     const parent = document.getElementById(`c-${id}`).parentElement;
     const isOpen = parent.classList.contains('open');
     document.querySelectorAll('.acc-item').forEach(i => i.classList.remove('open'));
-    if(!isOpen) { parent.classList.add('open'); draw(id); }
+    if(!isOpen) { 
+        parent.classList.add('open'); 
+        draw(id); 
+        // Показываем нужные контролы
+        if(isPC) document.getElementById(`btn-${id}`).style.display = 'block';
+        if(isIOS) document.getElementById(`hint-${id}`).style.display = 'block';
+    }
 }
 
 function draw(id) {
@@ -88,10 +99,8 @@ function draw(id) {
             <rect width="800" height="420" fill="white"/>
             <rect width="800" height="50" fill="#343a40"/>
             <text x="400" y="25" font-family="Arial" font-size="18" font-weight="bold" text-anchor="middle" fill="white" dominant-baseline="middle">${data.title}</text>
-            
             <text x="180" y="85" font-family="Arial" font-size="15" font-weight="bold" text-anchor="middle" fill="#007bff" dominant-baseline="middle">${data.m}</text>
             <text x="620" y="85" font-family="Arial" font-size="15" font-weight="bold" text-anchor="middle" fill="#007bff" dominant-baseline="middle">${data.s}</text>
-
             <g id="lines-${id}"></g>
             <g transform="translate(130, 105)">${drawConn('m', data)}</g>
             <g transform="translate(570, 105)">${drawConn('s', data)}</g>
@@ -115,7 +124,7 @@ function draw(id) {
             addLabel(id, l[2], 's', y2);
         }
     });
-    renderToImage(id);
+    render(id);
 }
 
 function drawConn(side, data) {
@@ -127,7 +136,6 @@ function drawConn(side, data) {
         const y = 8 + (i-1)*36;
         const color = customs[i] || stdColors[i];
         const isNull = nulls.includes(i);
-
         h += `<g transform="translate(5, ${y})">`;
         if(isNull) {
             h += `<rect width="90" height="26" fill="none" stroke="#ddd" stroke-dasharray="2,2" rx="2"/>`;
@@ -156,84 +164,34 @@ function addLabel(id, txt, side, y) {
     document.getElementById(`raw-${id}`).appendChild(t);
 }
 
-function renderToImage(id) {
+function render(id) {
     const svg = document.getElementById(`raw-${id}`);
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
     const xml = new XMLSerializer().serializeToString(svg);
     const img = new Image();
-    
-    // Используем Blob URL для надежности
-    const svgBlob = new Blob([xml], {type: 'image/svg+xml;charset=utf-8'});
-    const url = URL.createObjectURL(svgBlob);
+    const url = URL.createObjectURL(new Blob([xml], {type:'image/svg+xml;charset=utf-8'}));
 
     img.onload = function() {
-        canvas.width = 800;
-        canvas.height = 420;
-        ctx.fillStyle = "white";
-        ctx.fillRect(0, 0, 800, 420); // Строгий прямоугольник
+        canvas.width = 800; canvas.height = 420;
+        ctx.fillStyle = "white"; ctx.fillRect(0,0,800,420);
         ctx.drawImage(img, 0, 0);
-        
-        const pngData = canvas.toDataURL("image/png");
-        const iosImg = document.getElementById(`ios-${id}`);
-        iosImg.src = pngData;
-        iosImg.style.opacity = "1"; // Делаем видимой для прямого взаимодействия
-
-        // Сохраняем готовый Blob заранее
-        canvas.toBlob(blob => {
-            window[`blob_${id}`] = blob;
-        }, 'image/png');
-        
+        document.getElementById(`img-${id}`).src = canvas.toDataURL("image/png");
+        window[`blob_${id}`] = canvas;
         URL.revokeObjectURL(url);
     };
     img.src = url;
 }
 
-async function copyImage(id) {
-    const blob = window[`blob_${id}`];
-    
-    if (!blob) {
-        alert("Пожалуйста, подождите, изображение генерируется...");
-        return;
-    }
-
-    // Проверяем поддержку современного API
-    if (navigator.clipboard && window.ClipboardItem) {
-        try {
-            const data = [new ClipboardItem({ "image/png": blob })];
-            await navigator.clipboard.write(data);
-            showToast();
-            return;
-        } catch (err) {
-            console.error("Clipboard API failed:", err);
-        }
-    }
-
-    // Резервный механизм для Android WebView
-    // В Telegram/Android часто работает только Share или прямой контекстный клик
-    try {
-        const imgUrl = document.getElementById(`ios-${id}`).src;
-        const tempImg = document.createElement('img');
-        tempImg.src = imgUrl;
-        
-        // В некоторых случаях на Android помогает "выделение" картинки
-        const range = document.createRange();
-        range.selectNode(document.getElementById(`wrap-${id}`));
-        window.getSelection().removeAllRanges();
-        window.getSelection().addRange(range);
-        
-        alert("Инструкция для Android:\n1. Нажмите 'ОК'\n2. Зажмите пальцем появившуюся схему\n3. Выберите 'Копировать изображение'");
-    } catch (e) {
-        alert("Ваш браузер блокирует копирование. Пожалуйста, сделайте скриншот или зажмите картинку пальцем.");
-    }
-}
-function fallbackCopy(id) {
-    // Если автоматика не сработала, даем пользователю четкую инструкцию
-    alert("Ваш браузер ограничил доступ к буферу. \n\nПожалуйста, зажмите пальцем на изображении схемы и выберите 'Копировать изображение'.");
-}
-function showToast() {
-    const t = document.getElementById('toast');
-    t.style.display='block'; setTimeout(()=>t.style.display='none', 2000);
+async function copyToClipboard(id) {
+    const canvas = window[`blob_${id}`];
+    if (!canvas) return;
+    canvas.toBlob(async (blob) => {
+        const item = new ClipboardItem({ "image/png": blob });
+        await navigator.clipboard.write([item]);
+        const t = document.getElementById('toast');
+        t.style.display='block'; setTimeout(()=>t.style.display='none', 2000);
+    });
 }
 
 init();
