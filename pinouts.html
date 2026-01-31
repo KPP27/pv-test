@@ -3,196 +3,174 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>BMS Master List</title>
+    <title>BMS Справочник</title>
     <style>
-        :root { --accent: #2a8cff; --bg: #f0f2f5; }
+        :root { --accent: #2a8cff; --bg: #f4f7f9; }
         body { font-family: -apple-system, sans-serif; background: var(--bg); margin: 0; padding: 10px; display: flex; flex-direction: column; align-items: center; }
-        .container { max-width: 500px; width: 100%; background: #fff; padding: 15px; border-radius: 20px; box-shadow: 0 5px 20px rgba(0,0,0,0.05); }
-        
-        /* Список распиновок */
-        .pinout-selector { margin-bottom: 20px; }
-        select { width: 100%; padding: 12px; border-radius: 10px; border: 2px solid #eee; font-size: 16px; outline: none; cursor: pointer; background: #fff; }
-        
-        /* Схема */
-        .viewer { position: relative; background: #fff; border: 1px solid #eee; border-radius: 15px; padding: 10px; margin-bottom: 15px; }
-        #iosLayer { position: absolute; top:0; left:0; width:100%; height:100%; opacity:0; z-index:10; display:none; -webkit-touch-callout: default; }
-        svg { width: 100%; height: auto; }
+        .container { max-width: 500px; width: 100%; }
+        .back-link { display: block; margin-bottom: 15px; color: var(--accent); text-decoration: none; font-weight: bold; }
 
-        /* Кнопки и инфо */
-        .controls { display: flex; gap: 10px; justify-content: center; }
-        .btn { padding: 12px 20px; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; display: none; align-items: center; gap: 8px; }
-        .btn-copy { background: #28a745; color: white; }
-        .info-text { text-align: center; font-size: 13px; color: #666; margin-top: 10px; }
-        .toast { position: fixed; bottom: 20px; background: rgba(0,0,0,0.8); color: white; padding: 8px 16px; border-radius: 20px; display: none; }
+        /* Стиль аккордеона */
+        .acc-item { background: #fff; border-radius: 12px; margin-bottom: 10px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        .acc-header { padding: 15px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-weight: 600; color: #333; transition: 0.2s; }
+        .acc-header:hover { background: #fdfdfd; }
+        .acc-header::after { content: '▼'; font-size: 10px; color: #bbb; transition: 0.3s; }
+        .acc-item.open .acc-header::after { transform: rotate(180deg); }
+        
+        .acc-content { display: none; padding: 15px; border-top: 1px solid #eee; text-align: center; position: relative; }
+        .acc-item.open .acc-content { display: block; }
+
+        /* Схема */
+        .svg-container { position: relative; background: #fff; border-radius: 8px; margin-bottom: 10px; }
+        svg { width: 100%; height: auto; display: block; }
+        .ios-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; z-index: 5; -webkit-touch-callout: default; }
+
+        .btn-copy { background: #28a745; color: white; border: none; padding: 10px 18px; border-radius: 8px; font-weight: bold; cursor: pointer; display: none; margin: 10px auto; }
+        .hint { font-size: 12px; color: #888; margin-top: 5px; }
+        .toast { position: fixed; bottom: 20px; background: rgba(0,0,0,0.8); color: #white; padding: 8px 16px; border-radius: 20px; display: none; z-index: 100; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div class="pinout-selector">
-        <label style="display:block; margin-bottom:8px; font-weight:bold; color:#333;">Выберите схему:</label>
-        <select id="pinoutSelect" onchange="renderPinout()">
-            <option value="straight">Прямая вита пара (T568B)</option>
-            <option value="lux_pylon_new">LuxPower/Deye ↔ Pylontech NEW</option>
-            <option value="lux_dyness">LuxPower/Deye ↔ Dyness</option>
-            <option value="victron_pylon_new">Victron GX ↔ Pylontech NEW</option>
-            <option value="victron_dyness">Victron GX ↔ Dyness</option>
-            <option value="sofar_pylon">Sofar ↔ Pylontech</option>
-        </select>
-    </div>
-
-    <div class="viewer" id="viewer">
-        <img id="iosLayer" alt="Pinout">
-        <svg id="mainSvg" viewBox="0 0 800 450">
-            <rect width="800" height="450" fill="white" />
-            <text x="400" y="240" font-family="Arial" font-size="50" font-weight="bold" fill="#f8f8f8" text-anchor="middle">pvstringbot</text>
-            
-            <text id="masterTitle" x="152" y="50" font-family="Arial" font-size="18" font-weight="bold" text-anchor="middle" fill="#333">ИНВЕРТОР</text>
-            <text id="slaveTitle" x="648" y="50" font-family="Arial" font-size="18" font-weight="bold" text-anchor="middle" fill="#333">АККУМУЛЯТОР</text>
-            <text id="masterSub" x="152" y="70" font-family="Arial" font-size="14" text-anchor="middle" fill="#666"></text>
-            <text id="slaveSub" x="648" y="70" font-family="Arial" font-size="14" text-anchor="middle" fill="#666"></text>
-
-            <g id="linesGroup"></g>
-            <g id="masterPins" transform="translate(80, 100)"></g>
-            <g id="slavePins" transform="translate(576, 100)"></g>
-        </svg>
-    </div>
-
-    <div class="controls">
-        <button id="pcCopyBtn" class="btn btn-copy" onclick="copyImage()">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
-            Скопировать
-        </button>
-    </div>
-    <div id="infoText" class="info-text"></div>
+    <a href="index.html" class="back-link">← Назад</a>
+    <div id="accordion"></div>
 </div>
 
 <div id="toast" class="toast">✅ Скопировано!</div>
 
 <script>
-const pinouts = {
-    straight: {
-        master: "Инвертор", slave: "Устройство", mSub: "T568B", sSub: "T568B",
-        links: [ [1,1],[2,2],[3,3],[4,4,'CAN-H'],[5,5,'CAN-L'],[6,6],[7,7],[8,8] ]
-    },
-    lux_pylon_new: {
-        master: "LuxPower/Deye", slave: "Pylontech NEW", mSub: "CAN Pins", sSub: "CAN Pins",
-        links: [ [4,4,'CAN-H'], [5,5,'CAN-L'] ]
-    },
-    victron_pylon_new: {
-        master: "Victron GX", slave: "Pylontech NEW", mSub: "Pins 7,8", sSub: "Pins 4,5",
-        links: [ [7,4,'CAN-H'], [8,5,'CAN-L'], [3,3,'GND'] ]
-    },
-    victron_dyness: {
-        master: "Victron GX", slave: "Dyness", mSub: "Pins 7,8", sSub: "Pins 1,2",
-        links: [ [7,1,'CAN-H'], [8,2,'CAN-L'], [3,3,'GND'] ]
-    }
-    // Можно добавить Sofar и другие из PDF по тому же принципу
-};
+// База данных из вашего PDF
+const pinoutsData = [
+    { id: 'str', title: "Прямая витая пара (T568B)", m: "MASTER", s: "SLAVE", links: [[1,1],[2,2],[3,3],[4,4],[5,5],[6,6],[7,7],[8,8]] },
+    { id: 'ld_pyl', title: "LuxPower/Deye ↔ Pylontech NEW", m: "Inverter", s: "Battery", links: [[4,4,'CAN-H'],[5,5,'CAN-L']] },
+    { id: 'ld_dyn', title: "LuxPower/Deye ↔ Dyness", m: "Inverter", s: "Battery", links: [[4,1,'CAN-H'],[5,2,'CAN-L']] },
+    { id: 'vic_pyl', title: "Victron GX ↔ Pylontech NEW", m: "Victron", s: "Pylontech", links: [[7,4,'CAN-H'],[8,5,'CAN-L'],[3,3,'GND']] },
+    { id: 'vic_dyn', title: "Victron GX ↔ Dyness", m: "Victron", s: "Dyness", links: [[7,1,'CAN-H'],[8,2,'CAN-L'],[3,3,'GND']] },
+    { id: 'sof_sof', title: "Sofar ↔ Sofar BTS (CAN)", m: "Sofar", s: "BTS", links: [[4,4,'CAN-H'],[5,5,'CAN-L']] }
+];
 
-const colors = ["#fff", "#FF8C00", "#FF8C00", "#fff", "#0000FF", "#fff", "#32CD32", "#fff", "#8B4513"];
+const colors = ["", "#fff", "#FF8C00", "#fff", "#0000FF", "#fff", "#32CD32", "#fff", "#8B4513"];
 const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 
-function renderPinout() {
-    const key = document.getElementById('pinoutSelect').value;
-    const data = pinouts[key];
-    
-    document.getElementById('masterTitle').textContent = data.master;
-    document.getElementById('slaveTitle').textContent = data.slave;
-    document.getElementById('masterSub').textContent = data.mSub;
-    document.getElementById('slaveSub').textContent = data.sSub;
+function init() {
+    const container = document.getElementById('accordion');
+    pinoutsData.forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'acc-item';
+        div.innerHTML = `
+            <div class="acc-header" onclick="toggleItem(this, '${item.id}')">${item.title}</div>
+            <div class="acc-content" id="cont-${item.id}">
+                <div class="svg-container">
+                    <img class="ios-overlay" id="img-${item.id}">
+                    <div id="svg-dest-${item.id}"></div>
+                </div>
+                <button class="btn-copy" id="btn-${item.id}" onclick="copyImg('${item.id}')">📋 Скопировать</button>
+                <div class="hint" id="hint-${item.id}"></div>
+            </div>
+        `;
+        container.appendChild(div);
+    });
+}
 
-    const linesGroup = document.getElementById('linesGroup');
-    const mPins = document.getElementById('masterPins');
-    const sPins = document.getElementById('slavePins');
-    
-    linesGroup.innerHTML = '';
-    mPins.innerHTML = drawConnector(true);
-    sPins.innerHTML = drawConnector(false);
+function toggleItem(el, id) {
+    const parent = el.parentElement;
+    const isOpen = parent.classList.contains('open');
+    document.querySelectorAll('.acc-item').forEach(i => i.classList.remove('open'));
+    if (!isOpen) {
+        parent.classList.add('open');
+        renderSvg(id);
+    }
+}
 
-    data.links.forEach(link => {
-        const [mIdx, sIdx, label] = link;
-        const x1 = 215, y1 = 116 + (mIdx-1)*30;
-        const x2 = 585, y2 = 116 + (sIdx-1)*30;
-        
-        // Рисуем линию
-        const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-        path.setAttribute("d", `M ${x1} ${y1} C 400 ${y1}, 400 ${y2}, ${x2} ${y2}`);
-        path.setAttribute("stroke", colors[mIdx] === "#fff" ? "#ccc" : colors[mIdx]);
-        path.setAttribute("stroke-width", "4");
-        path.setAttribute("fill", "none");
-        linesGroup.appendChild(path);
+function renderSvg(id) {
+    const data = pinoutsData.find(i => i.id === id);
+    const dest = document.getElementById(`svg-dest-${id}`);
+    if (dest.innerHTML !== "") return; // Уже нарисовано
 
-        // Добавляем метки (CAN-H и т.д.)
-        if(label) {
-            addLabel(mIdx, label, true);
-            addLabel(sIdx, label, false);
+    const svgHtml = `
+        <svg id="svg-${id}" viewBox="0 0 800 400" xmlns="http://www.w3.org/2000/svg">
+            <rect width="800" height="400" fill="white"/>
+            <text x="400" y="210" font-family="Arial" font-size="40" fill="#f4f4f4" text-anchor="middle" font-weight="bold">pvstringbot</text>
+            <text x="120" y="40" font-family="Arial" font-size="16" font-weight="bold" text-anchor="middle">${data.m}</text>
+            <text x="680" y="40" font-family="Arial" font-size="16" font-weight="bold" text-anchor="middle">${data.s}</text>
+            <g id="g-lines-${id}"></g>
+            <g id="g-m-${id}" transform="translate(50,60)">${drawConn(true)}</g>
+            <g id="g-s-${id}" transform="translate(610,60)">${drawConn(false)}</g>
+        </svg>`;
+    dest.innerHTML = svgHtml;
+
+    const linesG = document.getElementById(`g-lines-${id}`);
+    data.links.forEach(l => {
+        const x1 = 194, y1 = 75 + (l[0]-1)*40, x2 = 610, y2 = 75 + (l[1]-1)*40;
+        const p = document.createElementNS("http://www.w3.org/2000/svg", "path");
+        p.setAttribute("d", `M ${x1} ${y1} C 400 ${y1}, 400 ${y2}, ${x2} ${y2}`);
+        p.setAttribute("stroke", colors[l[0]]==="#fff" ? "#ddd" : colors[l[0]]);
+        p.setAttribute("stroke-width", "5");
+        p.setAttribute("fill", "none");
+        linesG.appendChild(p);
+        if(l[2]) {
+            addTxt(id, l[0], l[2], true);
+            addTxt(id, l[1], l[2], false);
         }
     });
 
-    updateOutput();
+    prepareOutput(id);
 }
 
-function drawConnector(isMaster) {
-    let html = `<rect width="144" height="280" rx="10" fill="#f9f9f9" stroke="#ccc"/>`;
+function drawConn(isM) {
+    let h = '<rect width="144" height="330" rx="8" fill="#f9f9f9" stroke="#ccc"/>';
     for(let i=1; i<=8; i++) {
-        const y = 6 + (i-1)*30;
-        html += `<rect x="10" y="${y}" width="124" height="20" rx="4" fill="${colors[i]}" stroke="#ddd"/>
-                 <text x="${isMaster ? 120 : 25}" y="${y+15}" font-size="12" font-weight="bold">${i}</text>`;
+        h += `<rect x="10" y="${5+(i-1)*40}" width="124" height="30" rx="4" fill="${colors[i]}" stroke="#eee"/>`;
+        h += `<text x="${isM?115:25}" y="${25+(i-1)*40}" font-family="Arial" font-size="14" font-weight="bold" text-anchor="middle">${i}</text>`;
     }
-    return html;
+    return h;
 }
 
-function addLabel(idx, text, isMaster) {
-    const g = document.getElementById(isMaster ? 'masterPins' : 'slavePins');
-    const txt = document.createElementNS("http://www.w3.org/2000/svg", "text");
-    txt.setAttribute("x", isMaster ? "-10" : "154");
-    txt.setAttribute("y", 21 + (idx-1)*30);
-    txt.setAttribute("font-size", "12");
-    txt.setAttribute("font-weight", "bold");
-    txt.setAttribute("text-anchor", isMaster ? "end" : "start");
-    txt.textContent = text;
-    g.appendChild(txt);
+function addTxt(id, idx, txt, isM) {
+    const g = document.getElementById(isM ? `g-m-${id}` : `g-s-${id}`);
+    const t = document.createElementNS("http://www.w3.org/2000/svg", "text");
+    t.setAttribute("x", isM ? "-10" : "154"); t.setAttribute("y", 25+(idx-1)*40);
+    t.setAttribute("font-family","Arial"); t.setAttribute("font-size","12"); t.setAttribute("font-weight","bold");
+    t.setAttribute("text-anchor", isM?"end":"start"); t.textContent = txt;
+    g.appendChild(t);
 }
 
-function updateOutput() {
-    const svg = document.getElementById('mainSvg');
+function prepareOutput(id) {
+    const svg = document.getElementById(`svg-${id}`);
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
     const img = new Image();
-    const data = new XMLSerializer().serializeToString(svg);
-    const blob = new Blob([data], {type: 'image/svg+xml;charset=utf-8'});
-    const url = URL.createObjectURL(blob);
+    const xml = new XMLSerializer().serializeToString(svg);
+    const url = URL.createObjectURL(new Blob([xml], {type:'image/svg+xml;charset=utf-8'}));
 
     img.onload = function() {
-        canvas.width = 800; canvas.height = 450;
-        ctx.fillStyle = "white"; ctx.fillRect(0,0,800,450);
+        canvas.width = 800; canvas.height = 400;
+        ctx.fillStyle = "white"; ctx.fillRect(0,0,800,400);
         ctx.drawImage(img, 0, 0);
         const png = canvas.toDataURL("image/png");
-        
         if(isIOS) {
-            const layer = document.getElementById('iosLayer');
-            layer.src = png; layer.style.display = 'block';
-            document.getElementById('infoText').textContent = "Зажмите схему для копирования";
-        } else if(window.innerWidth > 900) {
-            document.getElementById('pcCopyBtn').style.display = 'flex';
-            canvas.toBlob(b => window.lastBlob = b);
-        } else {
-            document.getElementById('infoText').textContent = "Схема для ознакомления";
+            document.getElementById(`img-${id}`).src = png;
+            document.getElementById(`img-${id}`).style.display = 'block';
+            document.getElementById(`hint-${id}`).textContent = "Зажмите схему для копирования";
+        } else if(window.innerWidth > 800) {
+            document.getElementById(`btn-${id}`).style.display = 'block';
+            canvas.toBlob(b => window[`blob-${id}`] = b);
         }
+        URL.revokeObjectURL(url);
     };
     img.src = url;
 }
 
-async function copyImage() {
-    if(!window.lastBlob) return;
-    const item = new ClipboardItem({ "image/png": window.lastBlob });
-    await navigator.clipboard.write([item]);
+async function copyImg(id) {
+    const b = window[`blob-${id}`];
+    if(!b) return;
+    await navigator.clipboard.write([new ClipboardItem({"image/png": b})]);
     const t = document.getElementById('toast');
-    t.style.display = 'block'; setTimeout(()=>t.style.display='none', 2000);
+    t.style.display='block'; setTimeout(()=>t.style.display='none', 2000);
 }
 
-renderPinout();
+init();
 </script>
 </body>
 </html>
