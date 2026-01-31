@@ -83,7 +83,8 @@ const pinouts = [
     { id: 10, title: "LuxPower (Червоні діпи) ↔ Dyness", m: "LuxPower", s: "Dyness", links: [[3,5,'CAN-L'],[4,4,'CAN-H']], m_null:[1,2,5,6,7,8], m_colors:{3:'#0056b3', 4:'#0056b3'}, s_colors:{4:'#0056b3', 5:'#0056b3'} },
     { id: 11, title: "Sungrow (RJ45) ↔ Sungrow", m: "Sungrow Inv", s: "Sungrow Bat", links: [[4,4,'CAN-H'],[5,5,'CAN-L']], m_colors:{4:'#0056b3', 5:'#0056b3'}, s_colors:{4:'#0056b3', 5:'#0056b3'} },
     { id: 12, title: "Sungrow (COM Terminal) ↔ Sungrow", m: "Sungrow (10-pin)", s: "Sungrow (RJ45)", m_pins: 10, links: [[6,4,'CAN-H'],[7,5,'CAN-L']], m_null:[1,2,3,4,5,8,9,10], m_colors:{6:'#0056b3', 7:'#0056b3'} },
-    { id: 13, title: "Sofar Inverter ↔ Sofar BTS Battery", m: "Sofar (16-pin)", s: "Sofar BTS (RJ45)", m_pins: 16, links: [[7,4,'CAN-H'],[8,5,'CAN-L']], m_null:[1,2,3,4,5,6,9,10,11,12,13,14,15,16], m_colors:{7:'#0056b3', 8:'#0056b3'} }
+    { id: 13, title: "Sofar Inverter ↔ Sofar BTS Battery", m: "Sofar (16-pin)", s: "Sofar BTS (RJ45)", m_pins: 16, links: [[7,4,'CAN-H'],[8,5,'CAN-L']], m_null:[1,2,3,4,5,6,9,10,11,12,13,14,15,16], m_colors:{7:'#0056b3', 8:'#0056b3'} },
+    { id: 14, title: "Sofar Inverter ↔ Pylontech", m: "Sofar (16-pin)", s: "Pylontech (RJ45)", m_pins: 16, links: [[7,4,'CAN-H'],[8,5,'CAN-L'],[9,6,'GND']], m_null:[1,2,3,4,5,6,10,11,12,13,14,15,16], s_null:[1,2,3], m_colors:{7:'#0056b3', 8:'#0056b3', 9:'#32CD32'}, s_colors:{4:'#0056b3', 5:'#0056b3', 6:'#32CD32'} }
 ];
 const stdCols = ["", "#FF8C00", "#FF8C00", "#32CD32", "#0056b3", "#0056b3", "#32CD32", "#8B4513", "#8B4513"];
 const stdStriped = [false, true, false, true, false, true, false, true, false];
