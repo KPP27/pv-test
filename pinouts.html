@@ -128,14 +128,22 @@ function drawConn(side, id) {
 
 function addSignalLabel(id, idx, txt, side) {
     const target = document.getElementById(`raw-${id}`);
-    // Смещаем текст к краям картинки, чтобы не мешал коннекторам
+    // x: 110 для левого (Inverter), 690 для правого (Battery)
     const x = (side === 'm') ? 110 : 690;
+    
+    // Вычисляем y точно так же, как для центра пина: 
+    // Базовый отступ 105 (контейнер) + 8 (внутри коннектора) + (idx-1)*36 + 18 (центр пина)
+    const y = 105 + 8 + (idx - 1) * 36 + 18; 
+
     const t = document.createElementNS("http://www.w3.org/2000/svg", "text");
     t.setAttribute("x", x);
-    t.setAttribute("y", 125 + (idx-1)*36);
-    t.setAttribute("font-family", "Arial"); t.setAttribute("font-size", "13"); t.setAttribute("font-weight", "bold");
+    t.setAttribute("y", y);
+    t.setAttribute("font-family", "Arial"); 
+    t.setAttribute("font-size", "14"); // Немного увеличили для читаемости
+    t.setAttribute("font-weight", "bold");
     t.setAttribute("text-anchor", (side === 'm') ? "end" : "start");
-    t.setAttribute("fill", "#d9534f");
+    t.setAttribute("fill", "#333"); // Сделали более спокойным, чем красный
+    t.setAttribute("alignment-baseline", "middle"); // Центровка по вертикали относительно оси
     t.textContent = txt;
     target.appendChild(t);
 }
