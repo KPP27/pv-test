@@ -162,39 +162,55 @@ function renderToImage(id) {
     const ctx = canvas.getContext('2d');
     const xml = new XMLSerializer().serializeToString(svg);
     const img = new Image();
-    const blob = new Blob([xml], {type: 'image/svg+xml;charset=utf-8'});
-    const url = URL.createObjectURL(blob);
+    
+    // Используем Base64 для надежности на Android
+    const svg64 = btoa(unescape(encodeURIComponent(xml)));
+    const b64Start = 'data:image/svg+xml;base64,';
+    const image64 = b64Start + svg64;
 
     img.onload = function() {
-        canvas.width = 800; canvas.height = 420;
+        canvas.width = 800;
+        canvas.height = 420;
         ctx.fillStyle = "white";
-        ctx.fillRect(0, 0, 800, 420); // Прямоугольный фон без скруглений
+        ctx.fillRect(0, 0, 800, 420);
         ctx.drawImage(img, 0, 0);
-        const pngUrl = canvas.toDataURL("image/png");
-        document.getElementById(`ios-${id}`).src = pngUrl;
-        window[`blob-${id}`] = canvas; 
-        URL.revokeObjectURL(url);
+        
+        // Обновляем видимую картинку для "зажать и сохранить"
+        document.getElementById(`ios-${id}`).src = canvas.toDataURL("image/png");
+        // Сохраняем ссылку на канвас в объекте окна
+        window[`canvas_${id}`] = canvas;
     };
-    img.src = url;
+    img.src = image64;
 }
 
 async function copyImage(id) {
-    const canvas = window[`blob-${id}`];
-    if (!canvas) return;
-    
+    const canvas = window[`canvas_${id}`];
+    if (!canvas) {
+        alert("Ошибка: изображение еще не готово");
+        return;
+    }
+
     try {
+        // Современный способ для Android/Chrome
         canvas.toBlob(async (blob) => {
-            const data = [new ClipboardItem({ "image/png": blob })];
-            await navigator.clipboard.write(data);
-            showToast();
-        });
+            try {
+                const item = new ClipboardItem({ "image/png": blob });
+                await navigator.clipboard.write([item]);
+                showToast();
+            } catch (e) {
+                console.error(e);
+                fallbackCopy(id);
+            }
+        }, 'image/png');
     } catch (err) {
-        // Запасной вариант для некоторых браузеров Android
-        const img = document.getElementById(`ios-${id}`);
-        alert("Зажмите пальцем на изображении и выберите 'Копировать'");
+        fallbackCopy(id);
     }
 }
 
+function fallbackCopy(id) {
+    // Если автоматика не сработала, даем пользователю четкую инструкцию
+    alert("Ваш браузер ограничил доступ к буферу. \n\nПожалуйста, зажмите пальцем на изображении схемы и выберите 'Копировать изображение'.");
+}
 function showToast() {
     const t = document.getElementById('toast');
     t.style.display='block'; setTimeout(()=>t.style.display='none', 2000);
