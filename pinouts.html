@@ -81,18 +81,18 @@ function draw(id) {
         <rect width="800" height="420" fill="white"/>
         <rect width="800" height="50" fill="#2a8cff"/>
         <text x="400" y="28" font-family="Arial" font-size="19" font-weight="bold" text-anchor="middle" fill="white">${data.title}</text>
-        <text x="175" y="85" font-family="Arial" font-size="16" font-weight="bold" text-anchor="middle" fill="#2a8cff">${data.m}</text>
-        <text x="625" y="85" font-family="Arial" font-size="16" font-weight="bold" text-anchor="middle" fill="#2a8cff">${data.s}</text>
+        <text x="185" y="85" font-family="Arial" font-size="16" font-weight="bold" text-anchor="middle" fill="#2a8cff">${data.m}</text>
+        <text x="615" y="85" font-family="Arial" font-size="16" font-weight="bold" text-anchor="middle" fill="#2a8cff">${data.s}</text>
         <g id="lines-${id}"></g>
-        <g transform="translate(120, 105)">${drawConn(id, 'm', data)}</g>
-        <g transform="translate(550, 105)">${drawConn(id, 's', data)}</g>
+        <g transform="translate(130, 105)">${drawConn(id, 'm', data)}</g>
+        <g transform="translate(540, 105)">${drawConn(id, 's', data)}</g>
     </svg>`;
 
     data.links.forEach(l => {
         const y1 = 121 + (l[0]-1)*36, y2 = 121 + (l[1]-1)*36;
         const color = (data.m_colors && data.m_colors[l[0]]) || stdCols[l[0]];
         const p = document.createElementNS("http://www.w3.org/2000/svg", "path");
-        p.setAttribute("d", `M 230 ${y1} C 380 ${y1}, 420 ${y2}, 550 ${y2}`);
+        p.setAttribute("d", `M 240 ${y1} C 380 ${y1}, 420 ${y2}, 540 ${y2}`);
         p.setAttribute("stroke", color); p.setAttribute("stroke-width", "5"); p.setAttribute("fill", "none");
         if(stdStriped[l[0]]) p.setAttribute("stroke-dasharray", "12,6");
         document.getElementById(`lines-${id}`).appendChild(p);
@@ -117,16 +117,21 @@ function drawConn(id, side, data) {
                 h += `<g clip-path="url(#cp-${id})"><path d="M-10 30 L10 -10 M10 30 L30 -10 M30 30 L50 -10 M50 30 L70 -10 M70 30 L90 -10 M90 30 L110 -10" stroke="white" stroke-width="5" opacity="0.7"/></g>`;
             }
         }
-        h += `<text x="${side==='m'?-18:128}" y="14" font-family="Arial" font-size="13" font-weight="bold" fill="#666" text-anchor="middle" dominant-baseline="middle">${i}</text></g>`;
+        // Номер пина: центрирован по Y (dominant-baseline="middle")
+        h += `<text x="${side==='m'?-25:135}" y="13" font-family="Arial" font-size="13" font-weight="bold" fill="#666" text-anchor="middle" dominant-baseline="middle">${i}</text></g>`;
     }
     return h;
 }
 
 function addLbl(id, idx, txt, side) {
     const t = document.createElementNS("http://www.w3.org/2000/svg", "text");
-    t.setAttribute("x", side === 'm' ? 115 : 685); t.setAttribute("y", 125 + (idx-1)*36);
+    // Отступ названий увеличен, чтобы не мешать номерам пинов
+    t.setAttribute("x", side === 'm' ? 85 : 715); 
+    // Y координата совпадает с центром пина (121 + смещение)
+    t.setAttribute("y", 121 + (idx-1)*36);
     t.setAttribute("font-family", "Arial"); t.setAttribute("font-size", "12"); t.setAttribute("font-weight", "bold");
     t.setAttribute("text-anchor", side === 'm' ? "end" : "start"); t.setAttribute("fill", "#d9534f");
+    t.setAttribute("dominant-baseline", "middle");
     t.textContent = txt; document.getElementById(`raw-${id}`).appendChild(t);
 }
 
