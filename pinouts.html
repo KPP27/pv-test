@@ -155,14 +155,21 @@ function drawConn(id, side, data) {
     let h = `<rect width="130" height="${8 + pins*36}" fill="#f8f9fa" stroke="#ccc" rx="5"/>`;
     const nulls = (side === 'm' ? data.m_null : data.s_null) || [];
     const customs = (side === 'm' ? data.m_colors : data.s_colors) || {};
+    
     for(let i=1; i<=pins; i++) {
         const y = 8 + (i-1)*36;
+        // Исправлено: проверяем наличие CAN-L в линках для этого конкретного пина
+        const isL = data.links.find(l => (side === 'm' ? l[0] : l[1]) === i && l[2] === 'CAN-L');
+        
         h += `<g transform="translate(10, ${y})">`;
         if(nulls.includes(i)) {
             h += `<rect width="110" height="26" fill="none" stroke="#ddd" stroke-dasharray="2,2" rx="3"/><text x="55" y="14" font-family="Arial" font-size="10" fill="#bbb" text-anchor="middle" dominant-baseline="middle">NULL</text>`;
         } else {
             h += `<rect width="110" height="26" fill="${customs[i] || stdCols[i] || '#eee'}" rx="3"/>`;
-            if((customs[i] === undefined && stdStriped[i])) h += `<g clip-path="url(#cp-${id})"><path d="M-10 30 L10 -10 M30 30 L50 -10 M70 30 L90 -10" stroke="white" stroke-width="5" opacity="0.6"/></g>`;
+            // Условие полосок: либо это CAN-L по схеме, либо стандартная витая пара
+            if(isL || (customs[i] === undefined && stdStriped[i])) {
+                h += `<g clip-path="url(#cp-${id})"><path d="M-10 30 L10 -10 M10 30 L30 -10 M30 30 L50 -10 M50 30 L70 -10 M70 30 L90 -10" stroke="white" stroke-width="5" opacity="0.6"/></g>`;
+            }
         }
         h += `<text x="${side==='m'?-25:135}" y="14" font-family="Arial" font-size="12" font-weight="bold" fill="#666" text-anchor="middle" dominant-baseline="middle">${i}</text></g>`;
     }
@@ -197,7 +204,6 @@ function render(id) {
     img.src = url;
 }
 
-// ZOOM LOGIC
 let scale = 1, moveX = 0, moveY = 0, lastDist = 0, lastX = 0, lastY = 0, isDragging = false;
 const modalImg = document.getElementById('modalImg');
 
