@@ -85,14 +85,16 @@ function draw(id) {
         <text x="615" y="85" font-family="Arial" font-size="16" font-weight="bold" text-anchor="middle" fill="#2a8cff">${data.s}</text>
         <g id="lines-${id}"></g>
         <g transform="translate(130, 105)">${drawConn(id, 'm', data)}</g>
-        <g transform="translate(540, 105)">${drawConn(id, 's', data)}</g>
+        <g transform="translate(550, 105)">${drawConn(id, 's', data)}</g>
     </svg>`;
 
     data.links.forEach(l => {
-        const y1 = 121 + (l[0]-1)*36, y2 = 121 + (l[1]-1)*36;
+        // Базовая точка Y центра пина: 105 (смещение группы) + 8 (верхний отступ пина) + 13 (половина высоты пина 26) = 126
+        const y1 = 126 + (l[0]-1)*36, y2 = 126 + (l[1]-1)*36;
         const color = (data.m_colors && data.m_colors[l[0]]) || stdCols[l[0]];
         const p = document.createElementNS("http://www.w3.org/2000/svg", "path");
-        p.setAttribute("d", `M 240 ${y1} C 380 ${y1}, 420 ${y2}, 540 ${y2}`);
+        // Провод теперь выходит ровно из середины пина (X=240) и заходит в середину (X=550)
+        p.setAttribute("d", `M 240 ${y1} C 390 ${y1}, 410 ${y2}, 550 ${y2}`);
         p.setAttribute("stroke", color); p.setAttribute("stroke-width", "5"); p.setAttribute("fill", "none");
         if(stdStriped[l[0]]) p.setAttribute("stroke-dasharray", "12,6");
         document.getElementById(`lines-${id}`).appendChild(p);
@@ -117,18 +119,17 @@ function drawConn(id, side, data) {
                 h += `<g clip-path="url(#cp-${id})"><path d="M-10 30 L10 -10 M10 30 L30 -10 M30 30 L50 -10 M50 30 L70 -10 M70 30 L90 -10 M90 30 L110 -10" stroke="white" stroke-width="5" opacity="0.7"/></g>`;
             }
         }
-        // Номер пина: центрирован по Y (dominant-baseline="middle")
-        h += `<text x="${side==='m'?-25:135}" y="13" font-family="Arial" font-size="13" font-weight="bold" fill="#666" text-anchor="middle" dominant-baseline="middle">${i}</text></g>`;
+        // Номер пина: Y=14 (центр прямоугольника 26px)
+        h += `<text x="${side==='m'?-25:135}" y="14" font-family="Arial" font-size="13" font-weight="bold" fill="#666" text-anchor="middle" dominant-baseline="middle">${i}</text></g>`;
     }
     return h;
 }
 
 function addLbl(id, idx, txt, side) {
     const t = document.createElementNS("http://www.w3.org/2000/svg", "text");
-    // Отступ названий увеличен, чтобы не мешать номерам пинов
     t.setAttribute("x", side === 'm' ? 85 : 715); 
-    // Y координата совпадает с центром пина (121 + смещение)
-    t.setAttribute("y", 121 + (idx-1)*36);
+    // Координата Y совпадает с центром провода (126 + смещение)
+    t.setAttribute("y", 126 + (idx-1)*36);
     t.setAttribute("font-family", "Arial"); t.setAttribute("font-size", "12"); t.setAttribute("font-weight", "bold");
     t.setAttribute("text-anchor", side === 'm' ? "end" : "start"); t.setAttribute("fill", "#d9534f");
     t.setAttribute("dominant-baseline", "middle");
