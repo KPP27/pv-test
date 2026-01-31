@@ -163,50 +163,70 @@ function renderToImage(id) {
     const xml = new XMLSerializer().serializeToString(svg);
     const img = new Image();
     
-    // Используем Base64 для надежности на Android
-    const svg64 = btoa(unescape(encodeURIComponent(xml)));
-    const b64Start = 'data:image/svg+xml;base64,';
-    const image64 = b64Start + svg64;
+    // Используем Blob URL для надежности
+    const svgBlob = new Blob([xml], {type: 'image/svg+xml;charset=utf-8'});
+    const url = URL.createObjectURL(svgBlob);
 
     img.onload = function() {
         canvas.width = 800;
         canvas.height = 420;
         ctx.fillStyle = "white";
-        ctx.fillRect(0, 0, 800, 420);
+        ctx.fillRect(0, 0, 800, 420); // Строгий прямоугольник
         ctx.drawImage(img, 0, 0);
         
-        // Обновляем видимую картинку для "зажать и сохранить"
-        document.getElementById(`ios-${id}`).src = canvas.toDataURL("image/png");
-        // Сохраняем ссылку на канвас в объекте окна
-        window[`canvas_${id}`] = canvas;
+        const pngData = canvas.toDataURL("image/png");
+        const iosImg = document.getElementById(`ios-${id}`);
+        iosImg.src = pngData;
+        iosImg.style.opacity = "1"; // Делаем видимой для прямого взаимодействия
+
+        // Сохраняем готовый Blob заранее
+        canvas.toBlob(blob => {
+            window[`blob_${id}`] = blob;
+        }, 'image/png');
+        
+        URL.revokeObjectURL(url);
     };
-    img.src = image64;
+    img.src = url;
 }
 
 async function copyImage(id) {
-    const canvas = window[`canvas_${id}`];
-    if (!canvas) {
-        alert("Ошибка: изображение еще не готово");
+    const blob = window[`blob_${id}`];
+    
+    if (!blob) {
+        alert("Пожалуйста, подождите, изображение генерируется...");
         return;
     }
 
+    // Проверяем поддержку современного API
+    if (navigator.clipboard && window.ClipboardItem) {
+        try {
+            const data = [new ClipboardItem({ "image/png": blob })];
+            await navigator.clipboard.write(data);
+            showToast();
+            return;
+        } catch (err) {
+            console.error("Clipboard API failed:", err);
+        }
+    }
+
+    // Резервный механизм для Android WebView
+    // В Telegram/Android часто работает только Share или прямой контекстный клик
     try {
-        // Современный способ для Android/Chrome
-        canvas.toBlob(async (blob) => {
-            try {
-                const item = new ClipboardItem({ "image/png": blob });
-                await navigator.clipboard.write([item]);
-                showToast();
-            } catch (e) {
-                console.error(e);
-                fallbackCopy(id);
-            }
-        }, 'image/png');
-    } catch (err) {
-        fallbackCopy(id);
+        const imgUrl = document.getElementById(`ios-${id}`).src;
+        const tempImg = document.createElement('img');
+        tempImg.src = imgUrl;
+        
+        // В некоторых случаях на Android помогает "выделение" картинки
+        const range = document.createRange();
+        range.selectNode(document.getElementById(`wrap-${id}`));
+        window.getSelection().removeAllRanges();
+        window.getSelection().addRange(range);
+        
+        alert("Инструкция для Android:\n1. Нажмите 'ОК'\n2. Зажмите пальцем появившуюся схему\n3. Выберите 'Копировать изображение'");
+    } catch (e) {
+        alert("Ваш браузер блокирует копирование. Пожалуйста, сделайте скриншот или зажмите картинку пальцем.");
     }
 }
-
 function fallbackCopy(id) {
     // Если автоматика не сработала, даем пользователю четкую инструкцию
     alert("Ваш браузер ограничил доступ к буферу. \n\nПожалуйста, зажмите пальцем на изображении схемы и выберите 'Копировать изображение'.");
