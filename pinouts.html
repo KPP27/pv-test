@@ -72,39 +72,48 @@ function draw(id) {
     const target = document.getElementById(`svg-${id}`);
     if(target.innerHTML !== "") return;
 
+    // Высота пина 26, отступ сверху 8, итого центр первого пина на 8 + 13 = 21px от верха коннектора
+    // Коннекторы смещены по Y на 105
+    const getCenterY = (pinIdx) => 105 + 8 + (pinIdx - 1) * 36 + 13;
+
     target.innerHTML = `
         <svg id="raw-${id}" viewBox="0 0 800 420" xmlns="http://www.w3.org/2000/svg">
             <defs><clipPath id="cp-${id}"><rect width="100" height="26" rx="3"/></clipPath></defs>
             <rect width="800" height="420" fill="white"/>
             <rect width="800" height="50" fill="#343a40"/>
             <text x="400" y="32" font-family="Arial" font-size="20" font-weight="bold" text-anchor="middle" fill="white">${data.title}</text>
+            
             <text x="180" y="85" font-family="Arial" font-size="16" font-weight="bold" text-anchor="middle" fill="#007bff">${data.m}</text>
             <text x="620" y="85" font-family="Arial" font-size="16" font-weight="bold" text-anchor="middle" fill="#007bff">${data.s}</text>
+
             <g id="lines-${id}"></g>
             <g transform="translate(130, 105)">${drawConn('m', id)}</g>
             <g transform="translate(570, 105)">${drawConn('s', id)}</g>
         </svg>
     `;
 
-    const lines = document.getElementById(`lines-${id}`);
+    const linesG = document.getElementById(`lines-${id}`);
     data.links.forEach(l => {
-        const y1 = 121 + (l[0]-1)*36, y2 = 121 + (l[1]-1)*36;
+        const y1 = getCenterY(l[0]);
+        const y2 = getCenterY(l[1]);
+        
         const p = document.createElementNS("http://www.w3.org/2000/svg", "path");
+        // Линия теперь выходит из x=230 (конец левого коннектора) и входит в x=570 (начало правого)
         p.setAttribute("d", `M 230 ${y1} C 400 ${y1}, 400 ${y2}, 570 ${y2}`);
         p.setAttribute("stroke", colors[l[0]]);
         p.setAttribute("stroke-width", "5");
         p.setAttribute("fill", "none");
         if(striped[l[0]]) p.setAttribute("stroke-dasharray", "12,6");
-        lines.appendChild(p);
+        linesG.appendChild(p);
 
         if(l[2]) {
-            addSignalLabel(id, l[0], l[2], 'm');
-            addSignalLabel(id, l[1], l[2], 's');
+            addSignalLabel(id, l[0], l[2], 'm', y1);
+            addSignalLabel(id, l[1], l[2], 's', y2);
         }
     });
     finalize(id);
 }
-
+    
 function drawConn(side, id) {
     let h = `<rect width="100" height="295" fill="#f8f9fa" stroke="#ccc" rx="5"/>`;
     for(let i=1; i<=8; i++) {
@@ -128,12 +137,9 @@ function drawConn(side, id) {
     return h;
 }
 
-function addSignalLabel(id, idx, txt, side) {
+function addSignalLabel(id, idx, txt, side, centerY) {
     const target = document.getElementById(`raw-${id}`);
-    const centerY = 105 + 8 + (idx - 1) * 36 + 13; // Та же ось, что у пина
-    
-    // Смещение текста: чуть дальше от номера пина
-    const x = (side === 'm') ? 85 : 715;
+    const x = (side === 'm') ? 115 : 685; // Сдвинули чуть ближе к номерам
 
     const t = document.createElementNS("http://www.w3.org/2000/svg", "text");
     t.setAttribute("x", x);
@@ -143,7 +149,7 @@ function addSignalLabel(id, idx, txt, side) {
     t.setAttribute("font-weight", "bold");
     t.setAttribute("text-anchor", (side === 'm') ? "end" : "start");
     t.setAttribute("fill", "#d9534f");
-    t.setAttribute("dominant-baseline", "central"); // Центрирование по оси
+    t.setAttribute("dominant-baseline", "central"); // Идеальное центрирование по оси
     t.textContent = txt;
     target.appendChild(t);
 }
