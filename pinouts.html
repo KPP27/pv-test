@@ -11,7 +11,7 @@
       
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BMS Pinout Guide</title>
+    <title>BMS Connector Guide</title>
 
     <style>
         :root {
@@ -49,7 +49,7 @@
         .acc-header { 
             padding: 14px 16px; cursor: pointer; background: #fafafa;
             font-size: 14px; font-weight: 600; color: var(--text);
-            display: flex; justify-content: flex-start; align-items: center; gap: 10px;
+            display: flex; align-items: center; gap: 10px;
         }
         .acc-item.open { border-color: var(--accent); }
         .acc-item.open .acc-header { background: white; color: var(--accent); }
@@ -77,7 +77,7 @@
 <body>
 
 <div class="container">
-    <h2 id="main-title">BMS Pinout Guide</h2>
+    <h2>BMS Connector Guide</h2>
     <div id="accordion"></div>
 </div>
 
@@ -93,8 +93,8 @@ const pinouts = [
     { id: 11, title: "Sungrow ↔ Sungrow", m: "Sungrow Inv", s: "Sungrow Bat", links: [[1,1],[2,2],[3,3],[4,4,'CAN-H'],[5,5,'CAN-L'],[6,6],[7,7],[8,8]], m_colors: {4:'#0056b3', 5:'#0056b3'}, s_colors: {4:'#0056b3', 5:'#0056b3'} }
 ];
 
-const stdColors = ["", "#FF8C00", "#FF8C00", "#32CD32", "#0056b3", "#0056b3", "#32CD32", "#8B4513", "#8B4513"];
-const stdStriped = [false, true, false, true, false, true, false, true, false];
+const colors = ["", "#FF8C00", "#FF8C00", "#32CD32", "#0056b3", "#0056b3", "#32CD32", "#8B4513", "#8B4513"];
+const striped = [false, true, false, true, false, true, false, true, false];
 
 const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 const isPC = !isIOS && !/Android/i.test(navigator.userAgent);
@@ -130,67 +130,66 @@ function draw(id) {
     const data = pinouts.find(x => x.id === id);
     const target = document.getElementById(`svg-${id}`);
     if(target.innerHTML !== "") return;
-    const getPinY = (idx) => 105 + 8 + (idx - 1) * 36 + 13;
 
     target.innerHTML = `
         <svg id="raw-${id}" viewBox="0 0 800 420" xmlns="http://www.w3.org/2000/svg">
-            <defs><clipPath id="cp-${id}"><rect width="90" height="26" rx="3"/></clipPath></defs>
+            <defs><clipPath id="cp-${id}"><rect width="110" height="26" rx="3"/></clipPath></defs>
             <rect width="800" height="420" fill="white"/>
             <rect width="800" height="50" fill="#2a8cff"/>
-            <text x="400" y="25" font-family="Arial" font-size="18" font-weight="bold" text-anchor="middle" fill="white" dominant-baseline="middle">${data.title}</text>
-            <text x="180" y="85" font-family="Arial" font-size="15" font-weight="bold" text-anchor="middle" fill="#2a8cff" dominant-baseline="middle">${data.m}</text>
-            <text x="620" y="85" font-family="Arial" font-size="15" font-weight="bold" text-anchor="middle" fill="#2a8cff" dominant-baseline="middle">${data.s}</text>
+            <text x="400" y="30" font-family="Arial" font-size="20" font-weight="bold" text-anchor="middle" fill="white" dominant-baseline="middle">${data.title}</text>
+            <text x="140" y="85" font-family="Arial" font-size="16" font-weight="bold" text-anchor="middle" fill="#2a8cff" dominant-baseline="middle">${data.m}</text>
+            <text x="660" y="85" font-family="Arial" font-size="16" font-weight="bold" text-anchor="middle" fill="#2a8cff" dominant-baseline="middle">${data.s}</text>
             <g id="lines-${id}"></g>
-            <g transform="translate(130, 105)">${drawConn(id, 'm', data)}</g>
-            <g transform="translate(570, 105)">${drawConn(id, 's', data)}</g>
+            <g transform="translate(50, 105)">${drawConnector(id, 'm', data)}</g>
+            <g transform="translate(620, 105)">${drawConnector(id, 's', data)}</g>
         </svg>`;
 
     const linesG = document.getElementById(`lines-${id}`);
     data.links.forEach(l => {
-        const y1 = getPinY(l[0]), y2 = getPinY(l[1]);
-        const color = (data.m_colors && data.m_colors[l[0]]) || stdColors[l[0]];
+        const y1 = 121 + (l[0]-1)*36, y2 = 121 + (l[1]-1)*36;
+        const color = (data.m_colors && data.m_colors[l[0]]) || colors[l[0]];
         const p = document.createElementNS("http://www.w3.org/2000/svg", "path");
-        p.setAttribute("d", `M 230 ${y1} C 400 ${y1}, 400 ${y2}, 570 ${y2}`);
+        p.setAttribute("d", `M 220 ${y1} C 400 ${y1}, 400 ${y2}, 580 ${y2}`);
         p.setAttribute("stroke", color); p.setAttribute("stroke-width", "5"); p.setAttribute("fill", "none");
-        if(stdStriped[l[0]]) p.setAttribute("stroke-dasharray", "12,6");
+        if(striped[l[0]]) p.setAttribute("stroke-dasharray", "12,6");
         linesG.appendChild(p);
-        if(l[2]) { addLabel(id, l[2], 'm', y1); addLabel(id, l[2], 's', y2); }
+        if(l[2]) { addSignalLabel(id, l[0], l[2], 'm'); addSignalLabel(id, l[1], l[2], 's'); }
     });
     render(id);
 }
 
-function drawConn(id, side, data) {
-    let h = `<rect width="100" height="295" fill="#f8f9fa" stroke="#ccc" rx="5"/>`;
-    const nulls = (side === 'm' ? data.m_null : data.s_null) || [];
+function drawConnector(id, side, data) {
+    let h = `<rect width="130" height="295" fill="#f8f9fa" stroke="#ccc" rx="5"/>`;
     const customs = (side === 'm' ? data.m_colors : data.s_colors) || {};
+    const nulls = (side === 'm' ? data.m_null : data.s_null) || [];
+
     for(let i=1; i<=8; i++) {
         const y = 8 + (i-1)*36;
-        const color = customs[i] || stdColors[i];
-        const isNull = nulls.includes(i);
-        h += `<g transform="translate(5, ${y})">`;
-        if(isNull) {
-            h += `<rect width="90" height="26" fill="none" stroke="#ddd" stroke-dasharray="2,2" rx="3"/>`;
-            h += `<text x="45" y="13" font-family="Arial" font-size="9" fill="#bbb" text-anchor="middle" dominant-baseline="central">NULL</text>`;
+        const color = customs[i] || colors[i];
+        h += `<g transform="translate(10, ${y})">`;
+        if(nulls.includes(i)) {
+            h += `<rect width="110" height="26" fill="none" stroke="#ddd" stroke-dasharray="2,2" rx="3"/>`;
         } else {
-            h += `<rect width="90" height="26" fill="${color}" rx="3"/>`;
-            if(stdStriped[i] && !customs[i]) {
+            h += `<rect width="110" height="26" fill="${color}" rx="3"/>`;
+            if(striped[i] && !customs[i]) {
                 h += `<g clip-path="url(#cp-${id})">
-                        <path d="M-10 30 L10 -10 M15 30 L35 -10 M40 30 L60 -10 M65 30 L85 -10 M90 30 L110 -10" stroke="white" stroke-width="6" opacity="0.6"/>
+                        <path d="M-10 30 L10 -10 M10 30 L30 -10 M30 30 L50 -10 M50 30 L70 -10 M70 30 L90 -10 M90 30 L110 -10" stroke="white" stroke-width="5" opacity="0.7"/>
                       </g>`;
             }
         }
-        h += `<text x="${side==='m'?-15:105}" y="13" font-family="Arial" font-size="12" font-weight="bold" fill="#666" text-anchor="middle" dominant-baseline="central">${i}</text>`;
+        h += `<text x="-15" y="18" font-family="Arial" font-size="13" font-weight="bold" fill="#666" text-anchor="middle">${i}</text>`;
         h += `</g>`;
     }
     return h;
 }
 
-function addLabel(id, txt, side, y) {
+function addSignalLabel(id, idx, txt, side) {
     const t = document.createElementNS("http://www.w3.org/2000/svg", "text");
-    t.setAttribute("x", side === 'm' ? 115 : 685); t.setAttribute("y", y);
+    t.setAttribute("x", side === 'm' ? 35 : 765);
+    t.setAttribute("y", 125 + (idx-1)*36);
     t.setAttribute("font-family", "Arial"); t.setAttribute("font-size", "12"); t.setAttribute("font-weight", "bold");
-    t.setAttribute("text-anchor", side === 'm' ? "end" : "start"); t.setAttribute("fill", "#d9534f");
-    t.setAttribute("dominant-baseline", "central"); t.textContent = txt;
+    t.setAttribute("text-anchor", side === 'm' ? "end" : "start");
+    t.setAttribute("fill", "#d9534f"); t.textContent = txt;
     document.getElementById(`raw-${id}`).appendChild(t);
 }
 
@@ -223,7 +222,7 @@ async function copyImg(id) {
             btn.textContent = "✅ Распиновка " + id + " скопирована!";
             btn.classList.add("copied");
             setTimeout(() => { btn.textContent = oldTxt; btn.classList.remove("copied"); }, 2000);
-        } catch (e) { console.log(e); }
+        } catch (e) { console.error(e); }
     });
 }
 
