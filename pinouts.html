@@ -66,7 +66,9 @@
             display: block; 
             image-rendering: -webkit-optimize-contrast; /* Четкость на iPhone */
         }
-
+       
+        .hint-text { font-size: 13px; color: #666; margin-top: 10px; font-style: italic; 
+        }
         .copy-btn { 
             width: 100%; 
             margin-top: 12px; 
@@ -110,6 +112,10 @@
 <div id="toast">✅ Схема скопирована в буфер</div>
 
 <script>
+
+const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent);
+const isAndroid = /Android/.test(navigator.userAgent);
+const isPC = !isIOS && !isAndroid;
 // (Весь ваш JS код остается без изменений, он работает корректно)
 const pinouts = [
     { id: 1, title: "Прямая витая пара (T568B)", m: "MASTER", s: "SLAVE", links: [[1,1],[2,2],[3,3],[4,4],[5,5],[6,6],[7,7],[8,8]] },
@@ -131,12 +137,25 @@ const stdStriped = [false, true, false, true, false, true, false, true, false];
 function init() {
     const acc = document.getElementById('accordion');
     pinouts.forEach(p => {
+        let actionHtml = '';
+        if (isPC) {
+            actionHtml = `<button class="copy-btn" onclick="copyImg(${p.id})">📋 Скопировать схему</button>`;
+        } else if (isIOS) {
+            actionHtml = `<div class="hint-text">☝️ Зажмите картинку, чтобы скопировать или сохранить</div>`;
+        } else if (isAndroid) {
+            actionHtml = `<div class="hint-text">📱 Используйте скриншот или просмотр (копирование ограничено)</div>`;
+        }
+
         const item = document.createElement('div');
         item.className = 'acc-item';
-        item.innerHTML = `<div class="acc-header" onclick="toggle(${p.id})">${p.id}. ${p.title}</div>
+        item.innerHTML = `
+            <div class="acc-header" onclick="toggle(${p.id})">${p.id}. ${p.title}</div>
             <div class="acc-content" id="c-${p.id}">
-                <div class="svg-wrap"><img class="img-overlay" id="img-${p.id}"><div id="svg-${p.id}" style="display:none"></div></div>
-                <button class="copy-btn" onclick="copyImg(${p.id})">📋 Скопировать схему</button>
+                <div class="svg-wrap">
+                    <img class="img-overlay" id="img-${p.id}">
+                    <div id="svg-${p.id}" style="display:none"></div>
+                </div>
+                ${actionHtml}
             </div>`;
         acc.appendChild(item);
     });
