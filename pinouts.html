@@ -3,54 +3,49 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>BMS Справочник</title>
+    <title>BMS Pro Pinouts</title>
     <style>
-        :root { --accent: #2a8cff; --bg: #f4f7f9; }
-        body { font-family: -apple-system, sans-serif; background: var(--bg); margin: 0; padding: 10px; display: flex; flex-direction: column; align-items: center; }
-        .container { max-width: 500px; width: 100%; }
-        .back-link { display: block; margin-bottom: 15px; color: var(--accent); text-decoration: none; font-weight: bold; }
-
-        .acc-item { background: #fff; border-radius: 12px; margin-bottom: 10px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
-        .acc-header { padding: 15px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-weight: 600; color: #333; }
-        .acc-header::after { content: '▼'; font-size: 10px; color: #bbb; transition: 0.3s; }
-        .acc-item.open .acc-header::after { transform: rotate(180deg); }
+        :root { --accent: #2a8cff; --bg: #eff2f5; --text: #2c3e50; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); margin: 0; padding: 15px; display: flex; flex-direction: column; align-items: center; }
+        .container { max-width: 550px; width: 100%; }
         
-        .acc-content { display: none; padding: 15px; border-top: 1px solid #eee; text-align: center; position: relative; }
+        /* Аккордеон */
+        .acc-item { background: #fff; border-radius: 16px; margin-bottom: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.08); border: 1px solid rgba(0,0,0,0.05); }
+        .acc-header { padding: 18px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-weight: 700; color: var(--text); font-size: 15px; }
+        .acc-header::after { content: '→'; transition: 0.3s; color: var(--accent); }
+        .acc-item.open .acc-header { background: #fafafa; border-bottom: 1px solid #eee; }
+        .acc-item.open .acc-header::after { transform: rotate(90deg); }
+        
+        .acc-content { display: none; padding: 20px; text-align: center; }
         .acc-item.open .acc-content { display: block; }
 
-        .svg-container { position: relative; background: #fff; border-radius: 8px; }
-        svg { width: 100%; height: auto; display: block; }
-        .ios-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; z-index: 5; -webkit-touch-callout: default; }
+        /* Визуализация */
+        .svg-card { background: #fff; border-radius: 12px; position: relative; }
+        svg { width: 100%; height: auto; display: block; border-radius: 8px; }
+        .ios-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; z-index: 10; -webkit-touch-callout: default; }
 
-        .btn-copy { background: #28a745; color: white; border: none; padding: 12px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; display: none; margin: 15px auto 0; }
-        .hint { font-size: 12px; color: #888; margin-top: 8px; }
-        .toast { position: fixed; bottom: 20px; background: rgba(0,0,0,0.8); color: white; padding: 8px 16px; border-radius: 20px; display: none; z-index: 100; }
+        .btn-copy { background: var(--accent); color: white; border: none; padding: 14px 24px; border-radius: 12px; font-weight: 700; cursor: pointer; display: none; margin: 20px auto 0; box-shadow: 0 4px 10px rgba(42, 140, 255, 0.3); }
+        .hint { font-size: 13px; color: #7f8c8d; margin-top: 12px; font-style: italic; }
+        .toast { position: fixed; bottom: 30px; background: #2c3e50; color: white; padding: 12px 24px; border-radius: 30px; display: none; z-index: 1000; font-weight: 600; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <a href="index.html" class="back-link">← Назад</a>
     <div id="accordion"></div>
 </div>
 
-<div id="toast" class="toast">✅ Скопировано!</div>
+<div id="toast" class="toast">✅ Схема скопирована</div>
 
 <script>
-// Данные на основе вашего PDF [cite: 1, 4, 12, 23, 32, 44]
 const pinoutsData = [
-    { id: 'str', title: "Прямая витая пара (T568B)", m: "MASTER", s: "SLAVE", links: [[1,1],[2,2],[3,3],[4,4],[5,5],[6,6],[7,7],[8,8]] },
     { id: 'ld_pyl', title: "LuxPower/Deye ↔ Pylontech NEW", m: "Inverter", s: "Battery", links: [[4,4,'CAN-H'],[5,5,'CAN-L']] },
-    { id: 'ld_dyn', title: "LuxPower/Deye ↔ Dyness", m: "Inverter", s: "Battery", links: [[4,1,'CAN-H'],[5,2,'CAN-L']] },
     { id: 'vic_pyl', title: "Victron GX ↔ Pylontech NEW", m: "Victron", s: "Pylontech", links: [[7,4,'CAN-H'],[8,5,'CAN-L'],[3,3,'GND']] },
-    { id: 'vic_dyn', title: "Victron GX ↔ Dyness", m: "Victron", s: "Dyness", links: [[7,1,'CAN-H'],[8,2,'CAN-L'],[3,3,'GND']] },
-    { id: 'sof_sof', title: "Sofar ↔ Sofar BTS (CAN)", m: "Sofar", s: "BTS", links: [[4,4,'CAN-H'],[5,5,'CAN-L']] }
+    { id: 'sof_bts', title: "Sofar ↔ Sofar BTS (CAN)", m: "Sofar", s: "BTS", links: [[4,4,'CAN-H'],[5,5,'CAN-L']] }
 ];
 
-// Цвета T568B: [бело-оранж, оранж, бело-зелен, синий, бело-синий, зелен, бело-корич, корич]
-const coreColors = ["", "#FF8C00", "#FF8C00", "#32CD32", "#0000FF", "#0000FF", "#32CD32", "#8B4513", "#8B4513"];
-const isStriped = [false, true, false, true, false, true, false, true, false]; // 1,3,5,7 - полосатые [cite: 1]
-
+const wireColors = ["", "#FF8C00", "#FF8C00", "#32CD32", "#0000FF", "#0000FF", "#32CD32", "#8B4513", "#8B4513"];
+const isStriped = [false, true, false, true, false, true, false, true, false];
 const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 
 function init() {
@@ -61,11 +56,11 @@ function init() {
         div.innerHTML = `
             <div class="acc-header" onclick="toggleItem(this, '${item.id}')">${item.title}</div>
             <div class="acc-content">
-                <div class="svg-container">
+                <div class="svg-card">
                     <img class="ios-overlay" id="img-${item.id}">
                     <div id="svg-dest-${item.id}"></div>
                 </div>
-                <button class="btn-copy" id="btn-${item.id}" onclick="copyImg('${item.id}')">📋 Скопировать</button>
+                <button class="btn-copy" id="btn-${item.id}" onclick="copyImg('${item.id}')">Копировать схему</button>
                 <div class="hint" id="hint-${item.id}"></div>
             </div>
         `;
@@ -75,9 +70,9 @@ function init() {
 
 function toggleItem(el, id) {
     const parent = el.parentElement;
-    const isOpen = parent.classList.contains('open');
+    const wasOpen = parent.classList.contains('open');
     document.querySelectorAll('.acc-item').forEach(i => i.classList.remove('open'));
-    if (!isOpen) {
+    if (!wasOpen) {
         parent.classList.add('open');
         renderSvg(id);
     }
@@ -89,57 +84,68 @@ function renderSvg(id) {
     if (dest.innerHTML !== "") return;
 
     dest.innerHTML = `
-        <svg id="svg-${id}" viewBox="0 0 800 420" xmlns="http://www.w3.org/2000/svg">
-            <rect width="800" height="420" fill="white"/>
-            <text x="400" y="220" font-family="Arial" font-size="40" fill="#f8f8f8" text-anchor="middle" font-weight="bold">pvstringbot</text>
-            <text x="120" y="40" font-family="Arial" font-size="16" font-weight="bold" text-anchor="middle" fill="#333">${data.m}</text>
-            <text x="680" y="40" font-family="Arial" font-size="16" font-weight="bold" text-anchor="middle" fill="#333">${data.s}</text>
+        <svg id="svg-${id}" viewBox="0 0 800 480" xmlns="http://www.w3.org/2000/svg">
+            <rect width="800" height="480" fill="white"/>
+            
+            <rect width="800" height="60" fill="#f8f9fa"/>
+            <text x="400" y="38" font-family="Arial" font-size="22" font-weight="bold" fill="#2c3e50" text-anchor="middle">${data.title}</text>
+            
+            <text x="400" y="260" font-family="Arial" font-size="50" fill="#f1f1f1" text-anchor="middle" font-weight="bold">pvstringbot</text>
+            
             <g id="g-lines-${id}"></g>
-            <g id="g-m-${id}" transform="translate(50,60)">${drawConn()}</g>
-            <g id="g-s-${id}" transform="translate(610,60)">${drawConn()}</g>
+            
+            <g transform="translate(60,110)">
+                <text x="70" y="-20" font-family="Arial" font-size="16" font-weight="bold" text-anchor="middle" fill="#2a8cff">${data.m}</text>
+                ${drawRJ45()}
+                <g id="g-m-labels-${id}"></g>
+            </g>
+            
+            <g transform="translate(600,110)">
+                <text x="70" y="-20" font-family="Arial" font-size="16" font-weight="bold" text-anchor="middle" fill="#2a8cff">${data.s}</text>
+                ${drawRJ45()}
+                <g id="g-s-labels-${id}"></g>
+            </g>
         </svg>`;
 
     const linesG = document.getElementById(`g-lines-${id}`);
     data.links.forEach(l => {
-        const x1 = 194, y1 = 75 + (l[0]-1)*40, x2 = 610, y2 = 75 + (l[1]-1)*40;
+        const x1 = 200, y1 = 125 + (l[0]-1)*40, x2 = 600, y2 = 125 + (l[1]-1)*40;
         const p = document.createElementNS("http://www.w3.org/2000/svg", "path");
         p.setAttribute("d", `M ${x1} ${y1} C 400 ${y1}, 400 ${y2}, ${x2} ${y2}`);
-        p.setAttribute("stroke", coreColors[l[0]]);
-        p.setAttribute("stroke-width", "5");
+        p.setAttribute("stroke", wireColors[l[0]]);
+        p.setAttribute("stroke-width", "6");
         p.setAttribute("fill", "none");
-        if(isStriped[l[0]]) p.setAttribute("stroke-dasharray", "10,5"); // Визуально выделяем полосатые линии
+        if(isStriped[l[0]]) p.setAttribute("stroke-dasharray", "12,6");
         linesG.appendChild(p);
+        
         if(l[2]) {
-            addTxt(id, l[0], l[2], true);
-            addTxt(id, l[1], l[2], false);
+            addLabel(id, l[0], l[2], 'm');
+            addLabel(id, l[1], l[2], 's');
         }
     });
     prepareOutput(id);
 }
 
-function drawConn() {
-    let h = '<rect width="144" height="330" rx="8" fill="#f0f0f0" stroke="#ccc"/>';
+function drawRJ45() {
+    let h = '<rect width="140" height="340" rx="4" fill="#34495e"/>'; // Корпус
     for(let i=1; i<=8; i++) {
-        const y = 5+(i-1)*40;
-        if(isStriped[i]) {
-            // Полосатый провод: белый фон + цветная полоса в центре 
-            h += `<rect x="10" y="${y}" width="124" height="30" rx="4" fill="#fff" stroke="#ddd"/>`;
-            h += `<rect x="10" y="${y+12}" width="124" height="6" fill="${coreColors[i]}"/>`;
-        } else {
-            // Сплошной цвет 
-            h += `<rect x="10" y="${y}" width="124" height="30" rx="4" fill="${coreColors[i]}" stroke="rgba(0,0,0,0.1)"/>`;
-        }
-        h += `<text x="72" y="${25+(i-1)*40}" font-family="Arial" font-size="14" font-weight="bold" text-anchor="middle" fill="${isStriped[i]?'#333':'#fff'}">${i}</text>`;
+        const y = 5 + (i-1)*40;
+        h += `<rect x="10" y="${y}" width="120" height="30" rx="2" fill="${isStriped[i]?'#fff':wireColors[i]}"/>`;
+        if(isStriped[i]) h += `<rect x="10" y="${y+12}" width="120" height="6" fill="${wireColors[i]}"/>`;
+        h += `<text x="70" y="${y+20}" font-family="Arial" font-size="14" font-weight="bold" text-anchor="middle" fill="${isStriped[i]?'#333':'#fff'}">${i}</text>`;
     }
     return h;
 }
 
-function addTxt(id, idx, txt, isM) {
-    const g = document.getElementById(isM ? `g-m-${id}` : `g-s-${id}`);
+function addLabel(id, idx, txt, side) {
+    const g = document.getElementById(`g-${side}-labels-${id}`);
     const t = document.createElementNS("http://www.w3.org/2000/svg", "text");
-    t.setAttribute("x", isM ? "-10" : "154"); t.setAttribute("y", 25+(idx-1)*40);
-    t.setAttribute("font-family","Arial"); t.setAttribute("font-size","12"); t.setAttribute("font-weight","bold");
-    t.setAttribute("text-anchor", isM?"end":"start"); t.textContent = txt;
+    t.setAttribute("x", side==='m' ? "-15" : "155");
+    t.setAttribute("y", 25+(idx-1)*40);
+    t.setAttribute("font-family","Arial"); t.setAttribute("font-size","13"); t.setAttribute("font-weight","bold");
+    t.setAttribute("text-anchor", side==='m'?"end":"start");
+    t.setAttribute("fill", "#2c3e50");
+    t.textContent = txt;
     g.appendChild(t);
 }
 
@@ -152,15 +158,15 @@ function prepareOutput(id) {
     const url = URL.createObjectURL(new Blob([xml], {type:'image/svg+xml;charset=utf-8'}));
 
     img.onload = function() {
-        canvas.width = 800; canvas.height = 420;
-        ctx.fillStyle = "white"; ctx.fillRect(0,0,canvas.width,canvas.height);
+        canvas.width = 800; canvas.height = 480;
+        ctx.fillStyle = "white"; ctx.fillRect(0,0,800,480);
         ctx.drawImage(img, 0, 0);
         const png = canvas.toDataURL("image/png");
         if(isIOS) {
             const el = document.getElementById(`img-${id}`);
             el.src = png; el.style.display = 'block';
             document.getElementById(`hint-${id}`).textContent = "Зажмите схему для копирования";
-        } else if(!/Android|iPhone/i.test(navigator.userAgent)) {
+        } else {
             document.getElementById(`btn-${id}`).style.display = 'block';
             canvas.toBlob(b => window[`blob-${id}`] = b);
         }
@@ -176,7 +182,7 @@ async function copyImg(id) {
         await navigator.clipboard.write([new ClipboardItem({"image/png": b})]);
         const t = document.getElementById('toast');
         t.style.display='block'; setTimeout(()=>t.style.display='none', 2000);
-    } catch (e) { alert("Используйте ПК для копирования кнопкой"); }
+    } catch (e) { alert("Ошибка копирования"); }
 }
 
 init();
