@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>BMS Master List</title>
+    <title>BMS Connector Guide Pro</title>
     <style>
         :root { --accent: #007bff; --bg: #f8f9fa; --dark: #343a40; }
         body { font-family: -apple-system, sans-serif; background: var(--bg); margin: 0; padding: 10px; display: flex; flex-direction: column; align-items: center; }
         .container { max-width: 650px; width: 100%; }
         .acc-item { background: #fff; border: 1px solid #dee2e6; border-radius: 12px; margin-bottom: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-        .acc-header { padding: 18px; cursor: pointer; display: flex; justify-content: space-between; font-weight: bold; color: var(--dark); }
+        .acc-header { padding: 16px; cursor: pointer; display: flex; justify-content: space-between; font-weight: bold; color: var(--dark); font-size: 15px; }
         .acc-item.open .acc-header { background: #f1f3f5; border-bottom: 1px solid #dee2e6; }
         .acc-content { display: none; padding: 15px; text-align: center; background: #fff; position: relative; }
         .acc-item.open .acc-content { display: block; }
@@ -27,18 +27,34 @@
 
 <script>
 const pinouts = [
-    { id: 'str', title: "Пряма вита пара (T568B)", m: "MASTER", s: "SLAVE", links: [[1,1],[2,2],[3,3],[4,4],[5,5],[6,6],[7,7],[8,8]] },
-    { id: 'ld_dyn', title: "Deye / LuxPower / Solis ↔ Dyness", m: "Inverter", s: "Dyness", links: [[4,1,'CAN-H'], [5,2,'CAN-L']] },
-    { id: 'ld_pyl_new', title: "Deye / LuxPower / Solis ↔ Pylontech NEW", m: "Inverter", s: "Pylontech", links: [[4,4,'CAN-H'], [5,5,'CAN-L']] },
-    { id: 'ld_pyl_old', title: "Deye / LuxPower / Solis ↔ Pylontech US2000/3000", m: "Inverter", s: "Pylontech", links: [[4,4,'CAN-H'], [5,5,'CAN-L']] },
-    { id: 'vic_pyl_new', title: "Victron GX ↔ Pylontech NEW", m: "Victron GX", s: "Pylontech", links: [[7,4,'CAN-H'], [8,5,'CAN-L'], [3,3,'GND']] },
-    { id: 'vic_pyl_old', title: "Victron GX ↔ Pylontech US2000/3000", m: "Victron GX", s: "Pylontech", links: [[7,4,'CAN-H'], [8,5,'CAN-L'], [3,2,'GND']] },
-    { id: 'vic_dyn', title: "Victron GX ↔ Dyness", m: "Victron GX", s: "Dyness", links: [[7,1,'CAN-H'], [8,2,'CAN-L'], [3,3,'GND']] },
-    { id: 'sof_sof', title: "Sofar ↔ Sofar BTS (CAN)", m: "Inverter", s: "Battery", links: [[4,4,'CAN-H'], [5,5,'CAN-L']] }
+    { id: 'p1', title: "1. Пряма вита пара (T568B)", m: "MASTER", s: "SLAVE", links: [[1,1],[2,2],[3,3],[4,4],[5,5],[6,6],[7,7],[8,8]] },
+    { id: 'p2', title: "2. LuxPower / Deye / Solis ↔ Dyness", m: "Inverter", s: "Dyness", links: [[1,1],[2,2],[3,3],[4,4,'CAN-H'],[5,5,'CAN-L'],[6,6],[7,7],[8,8]] },
+    { id: 'p3', title: "3. LuxPower / Deye / Solis ↔ Pylontech NEW", m: "Inverter", s: "Pylontech", 
+        links: [[1,1],[2,2],[3,3],[4,4,'CAN-H'],[5,5,'CAN-L'],[6,6],[7,7],[8,8]],
+        s_null: [1,2,3] },
+    { id: 'p4', title: "4. LuxPower / Deye / Solis ↔ Pylontech US2000/3000", m: "Inverter", s: "Pylontech", links: [[1,1],[2,2],[3,3],[4,4,'CAN-H'],[5,5,'CAN-L'],[6,6],[7,7],[8,8]] },
+    { id: 'p5', title: "5. Victron GX ↔ Pylontech NEW", m: "Victron GX", s: "Pylontech", 
+        links: [[3,6,'GND'],[7,4,'CAN-H'],[8,5,'CAN-L']], 
+        m_null: [1,2,4,5,6], s_null: [1,2,3], m_colors: {3:'#32CD32', 7:'#0056b3', 8:'#0056b3'}, s_colors: {6:'#32CD32', 4:'#0056b3', 5:'#0056b3'} },
+    { id: 'p6', title: "6. Victron GX ↔ Pylontech US2000/3000", m: "Victron GX", s: "Pylontech", 
+        links: [[3,2,'GND'],[7,4,'CAN-H'],[8,5,'CAN-L']], 
+        m_null: [1,2,4,5,6], m_colors: {3:'#FF8C00', 7:'#0056b3', 8:'#0056b3'}, s_colors: {2:'#FF8C00', 4:'#0056b3', 5:'#0056b3'} },
+    { id: 'p8', title: "8. LuxPower (Красные дипы) ↔ Pylontech NEW", m: "LuxPower", s: "Pylontech", 
+        links: [[3,5,'CAN-L'],[4,4,'CAN-H']], 
+        m_null: [1,2,5,6,7,8], s_null: [1,2,3], m_colors: {3:'#0056b3', 4:'#0056b3'}, s_colors: {4:'#0056b3', 5:'#0056b3'} },
+    { id: 'p9', title: "9. LuxPower (Красные дипы) ↔ Pylontech US2000/3000", m: "LuxPower", s: "Pylontech", 
+        links: [[3,5,'CAN-L'],[4,4,'CAN-H']], 
+        m_null: [1,2,5,6,7,8], m_colors: {3:'#0056b3', 4:'#0056b3'}, s_colors: {4:'#0056b3', 5:'#0056b3'} },
+    { id: 'p10', title: "10. LuxPower (Красные дипы) ↔ Dyness", m: "LuxPower", s: "Dyness", 
+        links: [[3,5,'CAN-L'],[4,4,'CAN-H']], 
+        m_null: [1,2,5,6,7,8], m_colors: {3:'#0056b3', 4:'#0056b3'}, s_colors: {4:'#0056b3', 5:'#0056b3'} },
+    { id: 'p11', title: "11. Sungrow ↔ Sungrow", m: "Sungrow Inv", s: "Sungrow Bat", 
+        links: [[1,1],[2,2],[3,3],[4,4,'CAN-H'],[5,5,'CAN-L'],[6,6],[7,7],[8,8]],
+        m_colors: {4:'#0056b3', 5:'#0056b3'}, s_colors: {4:'#0056b3', 5:'#0056b3'} }
 ];
 
-const colors = ["", "#FF8C00", "#FF8C00", "#32CD32", "#0056b3", "#0056b3", "#32CD32", "#8B4513", "#8B4513"];
-const striped = [false, true, false, true, false, true, false, true, false];
+const stdColors = ["", "#FF8C00", "#FF8C00", "#32CD32", "#0056b3", "#0056b3", "#32CD32", "#8B4513", "#8B4513"];
+const stdStriped = [false, true, false, true, false, true, false, true, false];
 
 function init() {
     const acc = document.getElementById('accordion');
@@ -72,38 +88,31 @@ function draw(id) {
     const target = document.getElementById(`svg-${id}`);
     if(target.innerHTML !== "") return;
 
-    // Высота пина 26, отступ сверху 8, итого центр первого пина на 8 + 13 = 21px от верха коннектора
-    // Коннекторы смещены по Y на 105
-    const getCenterY = (pinIdx) => 105 + 8 + (pinIdx - 1) * 36 + 13;
-
     target.innerHTML = `
         <svg id="raw-${id}" viewBox="0 0 800 420" xmlns="http://www.w3.org/2000/svg">
-            <defs><clipPath id="cp-${id}"><rect width="100" height="26" rx="3"/></clipPath></defs>
+            <defs><clipPath id="cp-${id}"><rect width="90" height="26" rx="3"/></clipPath></defs>
             <rect width="800" height="420" fill="white"/>
             <rect width="800" height="50" fill="#343a40"/>
-            <text x="400" y="32" font-family="Arial" font-size="20" font-weight="bold" text-anchor="middle" fill="white">${data.title}</text>
-            
-            <text x="180" y="85" font-family="Arial" font-size="16" font-weight="bold" text-anchor="middle" fill="#007bff">${data.m}</text>
-            <text x="620" y="85" font-family="Arial" font-size="16" font-weight="bold" text-anchor="middle" fill="#007bff">${data.s}</text>
-
+            <text x="400" y="32" font-family="Arial" font-size="18" font-weight="bold" text-anchor="middle" fill="white">${data.title}</text>
+            <text x="180" y="85" font-family="Arial" font-size="15" font-weight="bold" text-anchor="middle" fill="#007bff">${data.m}</text>
+            <text x="620" y="85" font-family="Arial" font-size="15" font-weight="bold" text-anchor="middle" fill="#007bff">${data.s}</text>
             <g id="lines-${id}"></g>
-            <g transform="translate(130, 105)">${drawConn('m', id)}</g>
-            <g transform="translate(570, 105)">${drawConn('s', id)}</g>
+            <g transform="translate(130, 105)">${drawConn('m', data)}</g>
+            <g transform="translate(570, 105)">${drawConn('s', data)}</g>
         </svg>
     `;
 
     const linesG = document.getElementById(`lines-${id}`);
     data.links.forEach(l => {
-        const y1 = getCenterY(l[0]);
-        const y2 = getCenterY(l[1]);
-        
+        const y1 = 105 + 8 + (l[0]-1)*36 + 13;
+        const y2 = 105 + 8 + (l[1]-1)*36 + 13;
+        const color = (data.m_colors && data.m_colors[l[0]]) || stdColors[l[0]];
         const p = document.createElementNS("http://www.w3.org/2000/svg", "path");
-        // Линия теперь выходит из x=230 (конец левого коннектора) и входит в x=570 (начало правого)
         p.setAttribute("d", `M 230 ${y1} C 400 ${y1}, 400 ${y2}, 570 ${y2}`);
-        p.setAttribute("stroke", colors[l[0]]);
-        p.setAttribute("stroke-width", "5");
+        p.setAttribute("stroke", color);
+        p.setAttribute("stroke-width", "4");
         p.setAttribute("fill", "none");
-        if(striped[l[0]]) p.setAttribute("stroke-dasharray", "12,6");
+        if(stdStriped[l[0]]) p.setAttribute("stroke-dasharray", "10,5");
         linesG.appendChild(p);
 
         if(l[2]) {
@@ -113,43 +122,46 @@ function draw(id) {
     });
     finalize(id);
 }
-    
-function drawConn(side, id) {
+
+function drawConn(side, data) {
     let h = `<rect width="100" height="295" fill="#f8f9fa" stroke="#ccc" rx="5"/>`;
+    const nulls = (side === 'm') ? (data.m_null || []) : (data.s_null || []);
+    const customColors = (side === 'm') ? (data.m_colors || {}) : (data.s_colors || {});
+
     for(let i=1; i<=8; i++) {
         const y = 8 + (i-1)*36;
-        const color = colors[i];
-        const centerY = y + 13; // Ровно середина пина (высота пина 26 / 2)
+        const centerY = y + 13;
+        const isNull = nulls.includes(i);
+        const color = customColors[i] || stdColors[i];
 
         h += `<g transform="translate(5, ${y})">`;
-        h += `<rect width="90" height="26" fill="${color}" rx="3"/>`;
-        if(striped[i]) {
-            h += `<g clip-path="url(#cp-${id})">
-                    <path d="M-10 30 L10 -10 M15 30 L35 -10 M40 30 L60 -10 M65 30 L85 -10 M90 30 L110 -10" stroke="white" stroke-width="6" opacity="0.8"/>
-                  </g>`;
+        if(isNull) {
+            h += `<rect width="90" height="26" fill="none" stroke="#ccc" stroke-dasharray="2,2" rx="3"/>`;
+            h += `<text x="45" y="18" font-family="Arial" font-size="9" font-weight="bold" fill="#aaa" text-anchor="middle">NULL</text>`;
+        } else {
+            h += `<rect width="90" height="26" fill="${color}" rx="3"/>`;
+            if(stdStriped[i] && !customColors[i]) {
+                h += `<g clip-path="url(#cp-${data.id})">
+                        <path d="M-10 30 L10 -10 M15 30 L35 -10 M40 30 L60 -10 M65 30 L85 -10 M90 30 L110 -10" stroke="white" stroke-width="6" opacity="0.8"/>
+                      </g>`;
+            }
         }
-        h += `</g>`; // Закрываем группу пина
-
-        // Номер пина: на оси centerY
-        const pinNumX = (side === 'm') ? -10 : 110;
-        h += `<text x="${pinNumX}" y="${centerY}" font-family="Arial" font-size="13" font-weight="bold" fill="#666" text-anchor="middle" dominant-baseline="central">${i}</text>`;
+        const textX = (side === 'm') ? -15 : 105;
+        h += `<text x="${textX}" y="18" font-family="Arial" font-size="13" font-weight="bold" fill="#666" text-anchor="middle" dominant-baseline="central">${i}</text>`;
+        h += `</g>`;
     }
     return h;
 }
 
 function addSignalLabel(id, idx, txt, side, centerY) {
     const target = document.getElementById(`raw-${id}`);
-    const x = (side === 'm') ? 115 : 685; // Сдвинули чуть ближе к номерам
-
+    const x = (side === 'm') ? 115 : 685;
     const t = document.createElementNS("http://www.w3.org/2000/svg", "text");
-    t.setAttribute("x", x);
-    t.setAttribute("y", centerY);
-    t.setAttribute("font-family", "Arial");
-    t.setAttribute("font-size", "13");
-    t.setAttribute("font-weight", "bold");
+    t.setAttribute("x", x); t.setAttribute("y", centerY);
+    t.setAttribute("font-family", "Arial"); t.setAttribute("font-size", "12"); t.setAttribute("font-weight", "bold");
     t.setAttribute("text-anchor", (side === 'm') ? "end" : "start");
     t.setAttribute("fill", "#d9534f");
-    t.setAttribute("dominant-baseline", "central"); // Идеальное центрирование по оси
+    t.setAttribute("dominant-baseline", "central");
     t.textContent = txt;
     target.appendChild(t);
 }
@@ -161,7 +173,6 @@ function finalize(id) {
     const img = new Image();
     const xml = new XMLSerializer().serializeToString(svg);
     const url = URL.createObjectURL(new Blob([xml], {type:'image/svg+xml;charset=utf-8'}));
-
     img.onload = function() {
         canvas.width = 800; canvas.height = 420;
         ctx.fillStyle = "white"; ctx.fillRect(0,0,800,420);
