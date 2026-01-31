@@ -2,42 +2,106 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>BMS Pinout Master - Final Check</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>BMS Pinout Master</title>
     <style>
         :root { --bg: #f5f5f5; --card-bg: #ffffff; --accent: #2a8cff; --border: #ddd; --radius: 14px; }
-        body { font-family: system-ui, -apple-system, sans-serif; background: var(--bg); margin: 0; padding: 20px; display: flex; justify-content: center; }
-        .container { max-width: 420px; width: 100%; background: var(--card-bg); padding: 20px; border-radius: var(--radius); box-shadow: 0 4px 20px rgba(0,0,0,0.1); border: 1px solid var(--border); }
+        
+        /* Глобальный сброс для адаптивности */
+        * { box-sizing: border-box; }
+        
+        body { 
+            font-family: system-ui, -apple-system, sans-serif; 
+            background: var(--bg); 
+            margin: 0; 
+            padding: 15px; 
+            display: flex; 
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .container { 
+            width: 100%; 
+            max-width: 480px; /* Немного увеличил для комфорта на ПК */
+            background: var(--card-bg); 
+            padding: 20px; 
+            border-radius: var(--radius); 
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08); 
+            border: 1px solid var(--border);
+            height: fit-content;
+        }
+
         h2 { margin: 0 0 20px 0; font-size: 1.2rem; text-align: center; color: #222; }
-        .acc-item { border: 1px solid var(--border); border-radius: 12px; margin-bottom: 10px; overflow: hidden; }
-        .acc-header { padding: 14px 16px; cursor: pointer; background: #fafafa; font-size: 14px; font-weight: 600; display: flex; align-items: center; gap: 10px; transition: 0.2s; }
+
+        .acc-item { border: 1px solid var(--border); border-radius: 12px; margin-bottom: 10px; overflow: hidden; background: #fff; }
+        .acc-header { 
+            padding: 14px 16px; 
+            cursor: pointer; 
+            background: #fafafa; 
+            font-size: 14px; 
+            font-weight: 600; 
+            display: flex; 
+            align-items: center; 
+            gap: 10px; 
+            transition: 0.2s;
+            user-select: none; /* Чтобы не выделялся текст при нажатии в ТГ */
+        }
         .acc-item.open { border-color: var(--accent); }
+        .acc-item.open .acc-header { background: #fff; color: var(--accent); }
+        
         .acc-content { display: none; padding: 10px; text-align: center; border-top: 1px solid #eee; }
         .acc-item.open .acc-content { display: block; }
-        .svg-wrap { position: relative; width: 100%; background: white; border-radius: 8px; overflow: hidden; }
-        .img-overlay { width: 100%; height: auto; display: block; }
-        .copy-btn { width: 100%; margin-top: 12px; padding: 14px; border-radius: 12px; background: #28a745; color: white; border: none; cursor: pointer; font-weight: 600; font-size: 14px; }
-        
-        /* Стили для уведомления */
+
+        .svg-wrap { 
+            position: relative; 
+            width: 100%; 
+            background: white; 
+            border-radius: 8px; 
+            overflow: hidden;
+            border: 1px solid #eee;
+        }
+        .img-overlay { 
+            width: 100%; 
+            height: auto; 
+            display: block; 
+            image-rendering: -webkit-optimize-contrast; /* Четкость на iPhone */
+        }
+
+        .copy-btn { 
+            width: 100%; 
+            margin-top: 12px; 
+            padding: 14px; 
+            border-radius: 12px; 
+            background: #28a745; 
+            color: white; 
+            border: none; 
+            cursor: pointer; 
+            font-weight: 600; 
+            font-size: 14px; 
+            -webkit-tap-highlight-color: transparent; /* Убирает синюю вспышку на Android */
+        }
+
         #toast {
             position: fixed;
             bottom: 30px;
             left: 50%;
-            transform: translateX(-50%) translateY(100px);
-            background: #333;
+            transform: translateX(-50%) translateY(120px);
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(5px);
             color: white;
             padding: 12px 24px;
             border-radius: 50px;
             font-size: 14px;
-            font-weight: 500;
+            white-space: nowrap;
             box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            z-index: 1000;
-            pointer-events: none;
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 9999;
         }
         #toast.show { transform: translateX(-50%) translateY(0); }
     </style>
 </head>
 <body>
+
 <div class="container">
     <h2>BMS Connector Guide</h2>
     <div id="accordion"></div>
@@ -46,6 +110,7 @@
 <div id="toast">✅ Схема скопирована в буфер</div>
 
 <script>
+// (Весь ваш JS код остается без изменений, он работает корректно)
 const pinouts = [
     { id: 1, title: "Прямая витая пара (T568B)", m: "MASTER", s: "SLAVE", links: [[1,1],[2,2],[3,3],[4,4],[5,5],[6,6],[7,7],[8,8]] },
     { id: 2, title: "LuxPower/Deye/Solis ↔ Dyness", m: "Inverter", s: "Dyness", links: [[1,1],[2,2],[3,3],[4,4,'CAN-H'],[5,5,'CAN-L'],[6,6],[7,7],[8,8]] },
