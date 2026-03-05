@@ -1,1 +1,38 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>BMS Pinout Master</title>
+    <link rel="stylesheet" href="style.css">
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-0JQD4RVE06"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date()); gtag('config', 'G-0JQD4RVE06');
+    </script>
+</head>
+<body>
 
+<div id="zoomModal" class="modal">
+    <div style="position:absolute; top:20px; right:20px; color:white; z-index:10001; font-size:35px; font-weight:bold; cursor:pointer" onclick="closeModal()">×</div>
+    <img id="modalImg" src="">
+</div>
+    
+<div class="container">
+    <div class="top-nav">
+        <a href="menu.html" class="back-btn" id="backBtn">←</a>
+        <div class="lang-switch">
+            <button class="lang-btn" data-l="ru">RU</button>
+            <button class="lang-btn" data-l="ua">UA</button>
+            <button class="lang-btn" data-l="pl">PL</button>
+            <button class="lang-btn" data-l="en">EN</button>
+        </div>
+    </div>
+    <h2 id="mainTitle">BMS Pinouts</h2>
+    <div id="accordion"></div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
