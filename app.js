@@ -256,4 +256,40 @@ function getNum(id) {
 document.addEventListener('DOMContentLoaded', () => {
     updateTexts();
     if (document.getElementById('accordion')) renderAccordion();
+
+    // Исправленная функция обновления текстов
+function updateTexts() {
+    const lang = localStorage.getItem('lang') || 'ru';
+    const t = translations[lang];
+
+    // Обновляем все элементы с атрибутом data-t
+    document.querySelectorAll('[data-t]').forEach(el => {
+        const key = el.getAttribute('data-t');
+        if (t[key]) el.textContent = t[key];
+    });
+
+    // Обновляем кнопку назад (теперь она в стиле языковых кнопок)
+    const backBtn = document.getElementById('backBtn');
+    if (backBtn) {
+        backBtn.textContent = t.back;
+    }
+
+    // Подсветка активной кнопки языка
+    document.querySelectorAll('.lang-btn').forEach(b => {
+        // Проверяем и атрибут onclick, и data-l для надежности
+        const btnLang = b.getAttribute('data-l') || (b.getAttribute('onclick') || '').match(/'([^']+)'/)?.[1];
+        b.classList.toggle('active', btnLang === lang);
+    });
+}
+
+// Функция переключения
+function setLang(lang) {
+    localStorage.setItem('lang', lang);
+    updateTexts();
+    
+    // Если мы на странице распиновок - перерисовываем их
+    if (document.getElementById('accordion')) {
+        renderAccordion();
+    }
+}
 });
