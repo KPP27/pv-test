@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>String Length - Solar Toolbox</title>
+    <link rel="stylesheet" href="style.css">
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-0JQD4RVE06"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date()); gtag('config', 'G-0JQD4RVE06');
+    </script>
+</head>
+<body>
+<div class="container">
+    <div class="header-top">
+        <button class="back-btn" onclick="location.href='index.html'" id="backBtn" data-t="back">← Назад</button>
+        <div class="lang-switch">
+            <button class="lang-btn" onclick="setLang('ru')" data-l="ru">RU</button>
+            <button class="lang-btn" onclick="setLang('ua')" data-l="ua">UA</button>
+            <button class="lang-btn" onclick="setLang('pl')" data-l="pl">PL</button>
+            <button class="lang-btn" onclick="setLang('en')" data-l="en">EN</button>
+        </div>
+    </div>
+
+    <h2 data-t="title_string">Максимальная длина стринга</h2>
+
+    <div class="input-grid">
+        <div class="input-group"><label data-t="sl1">Макс. V DC инвертора (В)</label><input type="number" id="v_inv" placeholder="1000"></div>
+        <div class="input-group"><label data-t="sl2">Напряжение Voc модуля (В)</label><input type="number" id="v_voc" placeholder="41.5"></div>
+        <div class="input-group"><label data-t="sl3">Мин. температура воздуха (°C)</label><input type="number" id="t_min" placeholder="-20"></div>
+        <div class="input-group"><label data-t="sl4">Темп. коэффициент Voc (%/°C)</label><input type="number" id="t_coeff" placeholder="-0.29"></div>
+    </div>
+
+    <button onclick="calculateString()" data-t="calc" class="calc-btn">Рассчитать</button>
+
+    <div class="result" id="result"></div>
+    <button id="copyStringBtn" class="copy-btn" style="display:none;" data-t="copyBtn"></button>
+</div>
+<script src="app.js"></script>
+</body>
+</html>
