@@ -293,3 +293,21 @@ function setLang(lang) {
     }
 }
 });
+
+function zoomIn(src) {
+    if (!src) return;
+    let overlay = document.getElementById('zoomOverlay');
+    if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.id = 'zoomOverlay';
+        overlay.style = "position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:1000; display:flex; align-items:center; justify-content:center; cursor:zoom-out;";
+        overlay.onclick = () => overlay.style.display = 'none';
+        const img = document.createElement('img');
+        img.id = 'zoomImg';
+        img.style = "max-width:95%; max-height:95%; border-radius:8px;";
+        overlay.appendChild(img);
+        document.body.appendChild(overlay);
+    }
+    document.getElementById('zoomImg').src = src;
+    overlay.style.display = 'flex';
+}
