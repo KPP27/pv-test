@@ -4,57 +4,52 @@ const translations = {
         m1_t: "Макс. длина стринга", m1_d: "Расчет напряжения", 
         m2_t: "Распиновки BMS", m2_d: "Схемы CAN / RS485 / RJ45",
         m3_t: "Калькулятор диапазона", m3_d: "Количество модулей (Min/Max)",
-        back: "← Назад", hint: "Нажмите на схему для увеличения", 
-        straight: "Прямая витая пара (T568B)", redDips: "Красные дипы"
+        back: "← Назад"
     },
     ua: { 
         w_h: "Інструменти", w_p: "Помічник інженера", 
         m1_t: "Макс. довжина стринга", m1_d: "Розрахунок напруги", 
-        m2_t: "Розпіновки BMS", m2_d: "Схеми CAN / RS485 / RJ45",
+        m2_t: "Розпіновки BMS", m2_d: "Схеми підключення",
         m3_t: "Калькулятор діапазону", m3_d: "Кількість модулів (Min/Max)",
-        back: "← Назад", hint: "Натисніть на схему для збільшення",
-        straight: "Пряма вита пара (T568B)", redDips: "Червоні діпи"
+        back: "← Назад"
     },
-    // ... PL и EN добавляются аналогично с использованием коротким тире "-"
+    pl: { 
+        w_h: "Narzędzia", w_p: "Asystent inżyniera", 
+        m1_t: "Długość stringu", m1_d: "Obliczanie napięcia", 
+        m2_t: "Pinouty BMS", m2_d: "Schematy",
+        m3_t: "Kalkulator zakresu", m3_d: "Liczba modułów (Min/Max)",
+        back: "← Wstecz"
+    },
+    en: { 
+        w_h: "Toolkit", w_p: "Engineer Assistant", 
+        m1_t: "Max String Length", m1_d: "Voltage calculation", 
+        m2_t: "BMS Pinouts", m2_d: "Diagrams",
+        m3_t: "String Range Calc", m3_d: "Module count (Min/Max)",
+        back: "← Back"
+    }
 };
 
 function setLang(lang) {
     localStorage.setItem('lang', lang);
     updateTexts();
-    if (typeof initAccordion === 'function') initAccordion();
 }
 
 function updateTexts() {
     const lang = localStorage.getItem('lang') || 'ru';
     const t = translations[lang];
-    
-    // Обновляем все элементы с атрибутом data-t
+
     document.querySelectorAll('[data-t]').forEach(el => {
         if(t[el.dataset.t]) el.textContent = t[el.dataset.t];
     });
 
-    // Обновляем кнопку назад, если она есть
+    // Обновляем кнопку назад, если она есть на странице
     const backBtn = document.getElementById('backBtn');
-    if(backBtn && t.back) backBtn.textContent = t.back;
+    if(backBtn) backBtn.textContent = t.back;
 
-    // Обновляем активные кнопки переключателя
     document.querySelectorAll('.lang-btn').forEach(b => {
         b.classList.toggle('active', b.dataset.l === lang);
     });
 }
 
-// Вспомогательная функция для отрисовки (если мы на странице распиновок)
-function toggleAccordion(id) {
-    const cont = document.getElementById(`c-${id}`);
-    if(!cont) return;
-    const item = cont.parentElement;
-    const isOpen = item.classList.contains('open');
-    document.querySelectorAll('.acc-item').forEach(i => i.classList.remove('open'));
-    if(!isOpen) { 
-        item.classList.add('open'); 
-        if (typeof drawPinout === 'function') drawPinout(id); 
-    }
-}
-
-// Инициализация при загрузке
+// Запуск при загрузке
 document.addEventListener('DOMContentLoaded', updateTexts);
