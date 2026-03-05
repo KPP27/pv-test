@@ -163,5 +163,79 @@ document.addEventListener('DOMContentLoaded', () => {
     updateTexts(); // ваша функция перевода
     renderAccordion();
 });
+let lastCalcData = null;
 
+function getNum(id) {
+    const el = document.getElementById(id);
+    if (!el) return NaN;
+    const val = el.value.replace(',', '.').trim();
+    return val === "" ? NaN : parseFloat(val);
+}
+
+function calculateRange() {
+    const lang = localStorage.getItem("lang") || "ru";
+    const t = translations[lang];
+    
+    const v_voc = getNum('v_voc');
+    const v_vmp = getNum('v_vmp');
+    const kv = getNum('kv');
+    const t_min = getNum('t_min');
+    const t_max = getNum('t_max');
+    const mppt_max = getNum('v_mppt_max');
+    const mppt_min = getNum('v_mppt_min');
+
+    const resDiv = document.getElementById('result');
+    const copyBtn = document.getElementById('copyBtn');
+
+    if ([v_voc, v_vmp, kv, t_min, t_max, mppt_max, mppt_min].some(isNaN)) {
+        resDiv.innerHTML = `<span style="color:red; font-weight:bold;">${t.empty}</span>`;
+        resDiv.style.display = "block";
+        if (copyBtn) copyBtn.style.display = "none";
+        return;
+    }
+
+    // Расчет коррекции напряжений по температуре
+    const voc_min_t = v_voc * (1 + (t_min - 25) * (kv / 100));
+    const vmp_max_t = v_vmp * (1 + (t_max - 25) * (kv / 100));
+
+    const min_pcs = Math.ceil(mppt_min / vmp_max_t);
+    const max_pcs = Math.floor(mppt_max / voc_min_t);
+
+    lastCalcData = {
+        title: t.title_range,
+        result: `${t.res_min}: ${min_pcs} ${t.pcs} / ${t.res_max}: ${max_pcs} ${t.pcs}`
+    };
+
+    resDiv.innerHTML = `
+        <div class="res-line">${t.res_min}: <span class="res-val">${min_pcs} ${t.pcs}</span></div>
+        <div class="res-line">${t.res_max}: <span class="res-val">${max_pcs} ${t.pcs}</span></div>
+    `;
+    resDiv.style.display = "block";
+    if (copyBtn) copyBtn.style.display = "block";
+}
+
+// Универсальный обработчик копирования с учетом кросс-платформенности
+document.addEventListener('click', function(e) {
+    if (e.target && e.target.id === 'copyBtn') {
+        if (!lastCalcData) return;
+        const lang = localStorage.getItem("lang") || "ru";
+        const t = translations[lang];
+        
+        const textToCopy = `⚡ ${lastCalcData.title}\n📊 РЕЗУЛЬТАТ: ${lastCalcData.result}`;
+
+        // Метод navigator.clipboard надежен для Mini App
+        navigator.clipboard.writeText(textToCopy).then(() => {
+            const btn = e.target;
+            const originalText = t.copyBtn;
+            btn.textContent = t.copied;
+            btn.classList.add("copied");
+            setTimeout(() => {
+                btn.textContent = originalText;
+                btn.classList.remove("copied");
+            }, 2000);
+        }).catch(err => {
+            console.error('Ошибка копирования: ', err);
+        });
+    }
+});
 
