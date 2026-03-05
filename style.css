@@ -1,1 +1,43 @@
-
+:root { --bg: #f5f5f5; --card-bg: #ffffff; --accent: #2a8cff; --border: #ddd; --radius: 14px; }
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+body { 
+    font-family: system-ui, -apple-system, sans-serif; 
+    background: var(--bg); margin: 0; padding: 15px; 
+    display: flex; justify-content: center; min-height: 100vh;
+}
+.container { 
+    width: 100%; max-width: 480px; 
+    background: var(--card-bg); padding: 20px; 
+    border-radius: var(--radius); border: 1px solid var(--border);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08); height: fit-content;
+}
+.top-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+.back-btn { 
+    background: #eee; border: none; padding: 8px 14px; border-radius: 10px; 
+    font-size: 14px; font-weight: 600; cursor: pointer; color: #333; text-decoration: none;
+}
+.lang-switch { display: flex; gap: 4px; background: #eee; padding: 3px; border-radius: 10px; }
+.lang-btn {
+    padding: 5px 8px; font-size: 11px; font-weight: bold; border-radius: 7px;
+    cursor: pointer; border: none; background: transparent; color: #666;
+}
+.lang-btn.active { background: white; color: var(--accent); box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+h2 { margin: 0 0 20px 0; font-size: 1.2rem; text-align: left; color: #222; padding-left: 5px; }
+.acc-item { border: 1px solid var(--border); border-radius: 12px; margin-bottom: 10px; overflow: hidden; background: #fff; }
+.acc-header { 
+    padding: 14px 16px; cursor: pointer; background: #fafafa; 
+    font-size: 14px; font-weight: 600; display: flex; align-items: center; gap: 10px; 
+    transition: 0.2s; user-select: none; text-align: left; justify-content: flex-start;
+}
+.acc-item.open { border-color: var(--accent); }
+.acc-item.open .acc-header { background: #fff; color: var(--accent); }
+.acc-content { display: none; padding: 10px; text-align: center; border-top: 1px solid #eee; }
+.acc-item.open .acc-content { display: block; }
+.svg-wrap { position: relative; width: 100%; background: white; border-radius: 8px; overflow: hidden; border: 1px solid #eee; cursor: zoom-in; }
+.img-overlay { width: 100%; height: auto; display: block; image-rendering: -webkit-optimize-contrast; }
+.hint-text { font-size: 12px; color: #8e8e93; margin-top: 10px; font-style: italic; }
+.modal {
+    display: none; position: fixed; z-index: 10000; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.95); touch-action: none; overflow: hidden; justify-content: center; align-items: center;
+}
+#modalImg { max-width: 100%; max-height: 100%; will-change: transform; cursor: move; }
