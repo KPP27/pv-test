@@ -311,3 +311,65 @@ function zoomIn(src) {
     document.getElementById('zoomImg').src = src;
     overlay.style.display = 'flex';
 }
+
+function calculateRange() {
+    const lang = localStorage.getItem("lang") || "ru";
+    const t = translations[lang];
+    
+    const v_voc = getNum('v_voc');
+    const v_vmp = getNum('v_vmp');
+    const kv = getNum('kv');
+    const t_min = getNum('t_min');
+    const t_max = getNum('t_max');
+    const mppt_max = getNum('v_mppt_max');
+    const mppt_min = getNum('v_mppt_min');
+
+    const resDiv = document.getElementById('result');
+    if (!resDiv) return;
+
+    if ([v_voc, v_vmp, kv, t_min, t_max, mppt_max, mppt_min].some(isNaN)) {
+        resDiv.innerHTML = `<span style="color:red; font-weight:bold;">${t.empty}</span>`;
+        resDiv.style.display = "block";
+        return;
+    }
+
+    const voc_min_t = v_voc * (1 + (t_min - 25) * (kv / 100));
+    const vmp_max_t = v_vmp * (1 + (t_max - 25) * (kv / 100));
+
+    const min_pcs = Math.ceil(mppt_min / vmp_max_t);
+    const max_pcs = Math.floor(mppt_max / voc_min_t);
+
+    resDiv.innerHTML = `
+        <div class="res-line">${t.res_min}: <span class="res-val">${min_pcs} ${t.pcs}</span></div>
+        <div class="res-line">${t.res_max}: <span class="res-val">${max_pcs} ${t.pcs}</span></div>
+    `;
+    resDiv.style.display = "block";
+}
+
+function calculateString() {
+    const lang = localStorage.getItem("lang") || "ru";
+    const t = translations[lang];
+    
+    const v_inv = getNum('v_inv');
+    const v_voc = getNum('v_voc');
+    const t_min = getNum('t_min');
+    const t_coeff = getNum('t_coeff');
+    
+    const resDiv = document.getElementById('result');
+    if (!resDiv) return;
+
+    if ([v_inv, v_voc, t_min, t_coeff].some(isNaN)) {
+        resDiv.innerHTML = `<span style="color:red; font-weight:bold;">${t.empty}</span>`;
+        resDiv.style.display = "block";
+        return;
+    }
+
+    const vocCorr = v_voc * (1 + (t_min - 25) * (t_coeff / 100));
+    const count = Math.floor(v_inv / vocCorr);
+
+    resDiv.innerHTML = `
+        <div class="res-line" style="font-size:18px; color:#2a8cff;">${t.res_string} ${count}</div>
+        <div class="res-sub" style="font-size:13px; color:#666;">${t.calcVoc}: <b>${vocCorr.toFixed(2)} ${t.v_unit}</b></div>
+    `;
+    resDiv.style.display = "block";
+}
