@@ -27,7 +27,11 @@ const translations = {
         translations.ru.sl4 = "Темп. коэффициент Voc (%/°C)",
         translations.ru.res_string = "Макс. модулей в стринге:",
         translations.ru.calcVoc = "Расчетный Voc при мин. темп.",
-        translations.ru.v_unit = "В"
+        translations.ru.v_unit = "В",
+        translations.ru.hint = "Нажмите на схему для увеличения",
+        translations.ru.straigth = "Прямая витая пара (T568B)",
+        translations.ru.redDips = "Красные дипы"
+        
     },
     ua: { 
         w_h: "Інструменти", w_p: "Помічник інженера", 
@@ -57,7 +61,10 @@ const translations = {
         translations.ua.sl4 = "Темп. коефіцієнт Voc (%/°C)",
         translations.ua.res_string = "Макс. модулів у ланцюгу:",
         translations.ua.calcVoc = "Розрахунковий Voc при мін. темп.",
-        translations.ua.v_unit = "В"
+        translations.ua.v_unit = "В",
+        translations.ru.hint = "Натисніть на схему для збільшення",
+        translations.ru.straigth = "Пряма вита пара (T568B)",
+        translations.ru.redDips = "Червоні діпи"
     },
     pl: { 
         w_h: "Narzędzia", w_p: "Asystent inżyniera", 
@@ -87,7 +94,10 @@ const translations = {
         translations.pl.sl4 = "Współczynnik temp. Voc (%/°C)",
         translations.pl.res_string = "Maks. liczba modułów:",
         translations.pl.calcVoc = "Obliczone Voc w min. temp.",
-        translations.pl.v_unit = "V"
+        translations.pl.v_unit = "V",
+        translations.ru.hint = "Kliknij schemat, aby powiększyć",
+        translations.ru.straigth = "Klasyczna metoda (T568B)",
+        translations.ru.redDips = "Czerwone przełączniki DIP"
     },
     en: { 
         w_h: "Toolkit", w_p: "Engineer Assistant", 
@@ -118,6 +128,9 @@ const translations = {
         translations.en.res_string = "Max modules per string:",
         translations.en.calcVoc = "Calculated Voc at min temp",
         translations.en.v_unit = "V",
+        translations.ru.hint = "Tap on diagram to enlarge",
+        translations.ru.straigth = "Straight-through (T568B)",
+        translations.ru.redDips = "Red DIP switches"
     }
 };
 
