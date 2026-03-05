@@ -59,3 +59,26 @@ body {
 .acc-header { padding: 14px 16px; cursor: pointer; background: #fafafa; font-size: 14px; font-weight: 600; text-align: left; }
 .acc-content { display: none; padding: 10px; text-align: center; border-top: 1px solid var(--border); }
 .acc-item.open .acc-content { display: block; }
+
+.input-grid { display: flex; flex-direction: column; gap: 10px; }
+.input-group { display: flex; flex-direction: column; gap: 4px; }
+.input-group label { font-size: 12px; font-weight: 600; color: var(--text-muted); text-align: left; }
+.input-group input { 
+    padding: 12px; border-radius: 10px; border: 1px solid var(--border); 
+    font-size: 16px; background: #fafafa; outline: none; 
+}
+.calc-btn { 
+    width: 100%; margin-top: 15px; padding: 16px; background: var(--accent); 
+    color: white; border: none; border-radius: 12px; font-weight: 700; cursor: pointer;
+}
+.result { 
+    margin-top: 20px; padding: 15px; background: #f0f7ff; 
+    border-radius: 12px; border: 1px solid #cce3ff; display: none; 
+}
+.res-line { font-weight: 700; margin: 5px 0; }
+.res-val { color: var(--accent); }
+.copy-btn { 
+    width: 100%; margin-top: 10px; padding: 12px; background: #28a745; 
+    color: white; border: none; border-radius: 10px; cursor: pointer; 
+}
+.copy-btn.copied { background: #6c757d; }
