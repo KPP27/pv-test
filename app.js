@@ -53,3 +53,55 @@ function updateTexts() {
 
 // Запуск при загрузке
 document.addEventListener('DOMContentLoaded', updateTexts);
+
+// Данные распиновок
+const pinoutData = [
+    {
+        id: 1,
+        title: "Deye / LuxPower - Pylontech (CAN)",
+        leftName: "Inverter",
+        rightName: "Battery",
+        links: [[4,4, "CAN-H"], [5,5, "CAN-L"]] // [пин слева, пин справа, подпись]
+    },
+    {
+        id: 2,
+        title: "Victron - Pylontech (CAN)",
+        leftName: "Victron",
+        rightName: "Pylontech",
+        links: [[7,4, "CAN-H"], [8,5, "CAN-L"]]
+    }
+];
+
+// Функция отрисовки аккордеона
+function renderAccordion() {
+    const container = document.getElementById('accordion');
+    if (!container) return;
+    
+    container.innerHTML = pinoutData.map(item => `
+        <div class="acc-item" id="item-${item.id}">
+            <div class="acc-header" onclick="toggleItem(${item.id})">
+                ${item.title}
+            </div>
+            <div class="acc-content">
+                <div class="svg-container" onclick="openZoom(${item.id})">
+                    <p style="font-size:12px; color:#70757a;">Нажмите, чтобы открыть схему</p>
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
+
+function toggleItem(id) {
+    const el = document.getElementById(`item-${id}`);
+    const wasOpen = el.classList.contains('open');
+    document.querySelectorAll('.acc-item').forEach(i => i.classList.remove('open'));
+    if (!wasOpen) el.classList.add('open');
+}
+
+// Вызываем отрисовку при загрузке
+document.addEventListener('DOMContentLoaded', () => {
+    updateTexts(); // ваша функция перевода
+    renderAccordion();
+});
+
+
