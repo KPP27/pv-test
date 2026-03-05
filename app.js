@@ -19,7 +19,15 @@ const translations = {
         copied: "✅ Скопировано!",
         res_min: "Минимум в стринге",
         res_max: "Максимум в стринге",
-        pcs: "шт."
+        pcs: "шт.",
+        translations.ru.title_string = "Максимальная длина стринга",
+        translations.ru.sl1 = "Макс. напряжение DC инвертора (В)",
+        translations.ru.sl2 = "Напряжение Voc модуля (В)",
+        translations.ru.sl3 = "Мин. температура воздуха (°C)",
+        translations.ru.sl4 = "Темп. коэффициент Voc (%/°C)",
+        translations.ru.res_string = "Макс. модулей в стринге:",
+        translations.ru.calcVoc = "Расчетный Voc при мин. темп.",
+        translations.ru.v_unit = "В"
     },
     ua: { 
         w_h: "Інструменти", w_p: "Помічник інженера", 
@@ -41,7 +49,15 @@ const translations = {
         copied: "✅ Скопійовано!",
         res_min: "Мінімум у стрингу",
         res_max: "Максимум у стрингу",
-        pcs: "шт."
+        pcs: "шт.",
+        translations.ua.title_string = "Максимальна довжина стринга",
+        translations.ua.sl1 = "Макс. напруга DC інвертора (В)",
+        translations.ua.sl2 = "Напруга Voc модуля (В)",
+        translations.ua.sl3 = "Мін. температура повітря (°C)",
+        translations.ua.sl4 = "Темп. коефіцієнт Voc (%/°C)",
+        translations.ua.res_string = "Макс. модулів у ланцюгу:",
+        translations.ua.calcVoc = "Розрахунковий Voc при мін. темп.",
+        translations.ua.v_unit = "В"
     },
     pl: { 
         w_h: "Narzędzia", w_p: "Asystent inżyniera", 
@@ -63,7 +79,15 @@ const translations = {
         copied: "✅ Skopiowano!",
         res_min: "Minimum в stringu",
         res_max: "Maksimum в stringu",
-        pcs: "szt."
+        pcs: "szt.",
+        translations.pl.title_string = "Maksymalna długość stringu",
+        translations.pl.sl1 = "Max napięcie DC falownika (V)",
+        translations.pl.sl2 = "Napięcie Voc modułu (V)",
+        translations.pl.sl3 = "Min. temperatura otoczenia (°C)",
+        translations.pl.sl4 = "Współczynnik temp. Voc (%/°C)",
+        translations.pl.res_string = "Maks. liczba modułów:",
+        translations.pl.calcVoc = "Obliczone Voc w min. temp.",
+        translations.pl.v_unit = "V"
     },
     en: { 
         w_h: "Toolkit", w_p: "Engineer Assistant", 
@@ -85,7 +109,15 @@ const translations = {
         copied: "✅ Copied!",
         res_min: "Min modules in string",
         res_max: "Max modules in string",
-        pcs: "pcs."
+        pcs: "pcs.",
+        translations.en.title_string = "Maximum String Length",
+        translations.en.sl1 = "Max DC Inverter Voltage (V)",
+        translations.en.sl2 = "Module Voc (V)",
+        translations.en.sl3 = "Min. Ambient Temperature (°C)",
+        translations.en.sl4 = "Temp. Coefficient Voc (%/°C)",
+        translations.en.res_string = "Max modules per string:",
+        translations.en.calcVoc = "Calculated Voc at min temp",
+        translations.en.v_unit = "V",
     }
 };
 
@@ -239,3 +271,70 @@ document.addEventListener('click', function(e) {
     }
 });
 
+let lastStringCalc = null;
+
+function calculateString() {
+    const lang = localStorage.getItem("lang") || "ru";
+    const t = translations[lang];
+    
+    const v_inv = getNum('v_inv');
+    const v_voc = getNum('v_voc');
+    const t_min = getNum('t_min');
+    const t_coeff = getNum('t_coeff');
+    
+    const resDiv = document.getElementById('result');
+    const copyBtn = document.getElementById('copyStringBtn');
+
+    if ([v_inv, v_voc, t_min, t_coeff].some(isNaN)) {
+        resDiv.innerHTML = `<span style="color:red; font-weight:bold;">${t.empty}</span>`;
+        resDiv.style.display = "block";
+        if (copyBtn) copyBtn.style.display = "none";
+        return;
+    }
+
+    const vocCorr = v_voc * (1 + (t_min - 25) * (t_coeff / 100));
+    const count = Math.floor(v_inv / vocCorr);
+
+    lastStringCalc = {
+        title: t.title_string,
+        result: `${t.res_string} ${count} шт.`,
+        detail: `${t.calcVoc}: ${vocCorr.toFixed(2)} ${t.v_unit}`,
+        raw: { v_inv, v_voc, t_min, t_coeff }
+    };
+
+    resDiv.innerHTML = `
+        <div class="res-line" style="font-size:18px; color:var(--accent);">${t.res_string} ${count}</div>
+        <div class="res-sub" style="font-size:13px; color:var(--text-muted);">${t.calcVoc}: <b>${vocCorr.toFixed(2)} ${t.v_unit}</b></div>
+    `;
+    resDiv.style.display = "block";
+    if (copyBtn) copyBtn.style.display = "block";
+}
+
+// Слушатель для кнопки копирования в string.html
+document.addEventListener('click', function(e) {
+    if (e.target && e.target.id === 'copyStringBtn') {
+        if (!lastStringCalc) return;
+        const lang = localStorage.getItem("lang") || "ru";
+        const t = translations[lang];
+        
+        let text = `- ${lastStringCalc.title} -\n`;
+        text += `${t.sl1}: ${lastStringCalc.raw.v_inv} V\n`;
+        text += `${t.sl2}: ${lastStringCalc.raw.v_voc} V\n`;
+        text += `${t.sl3}: ${lastStringCalc.raw.t_min} °C\n`;
+        text += `${t.sl4}: ${lastStringCalc.raw.t_coeff} %/°C\n`;
+        text += `--------------------------\n`;
+        text += `${lastStringCalc.detail}\n`;
+        text += `${lastStringCalc.result}`;
+
+        navigator.clipboard.writeText(text).then(() => {
+            const btn = e.target;
+            const originalText = t.copyBtn;
+            btn.textContent = t.copied;
+            btn.classList.add("copied");
+            setTimeout(() => {
+                btn.textContent = originalText;
+                btn.classList.remove("copied");
+            }, 2000);
+        });
+    }
+});
