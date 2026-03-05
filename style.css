@@ -82,3 +82,28 @@ body {
     color: white; border: none; border-radius: 10px; cursor: pointer; 
 }
 .copy-btn.copied { background: #6c757d; }
+
+.back-btn-container {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+#backBtn {
+    display: inline-block;
+    padding: 8px 20px;
+    border: 1px solid #2a8cff;
+    background: white;
+    color: #2a8cff;
+    border-radius: 20px;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: bold;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+#backBtn:hover {
+    background: #2a8cff;
+    color: white;
+}
