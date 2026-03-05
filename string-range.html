@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Solar Toolbox - Range</title>
+    <link rel="icon" type="image/jpg" href="favicon.jpg">
+    <link rel="stylesheet" href="style.css">
+    
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-0JQD4RVE06"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date()); gtag('config', 'G-0JQD4RVE06');
+    </script>
+</head>
+<body>
+
+<div class="container">
+    <div class="header-top">
+        <button class="back-btn" onclick="location.href='index.html'" id="backBtn" data-t="back">← Назад</button>
+        <div class="lang-switch">
+            <button class="lang-btn" onclick="setLang('ru')" data-l="ru">RU</button>
+            <button class="lang-btn" onclick="setLang('ua')" data-l="ua">UA</button>
+            <button class="lang-btn" onclick="setLang('pl')" data-l="pl">PL</button>
+            <button class="lang-btn" onclick="setLang('en')" data-l="en">EN</button>
+        </div>
+    </div>
+
+    <h2 data-t="title_range">Оптимальное кол-во модулей</h2>
+
+    <div class="input-grid">
+        <div class="input-group"><label data-t="l1">Voc модуля (STC) (В)</label><input type="number" id="v_voc" step="any" placeholder="41.5"></div>
+        <div class="input-group"><label data-t="l2">Vmp модуля (STC) (В)</label><input type="number" id="v_vmp" step="any" placeholder="34.2"></div>
+        <div class="input-group"><label data-t="l3">Коэффициент Voc (%)</label><input type="number" id="kv" step="any" placeholder="-0.29"></div>
+        <div class="input-group"><label data-t="l4">Мин. температура (°C)</label><input type="number" id="t_min" step="any" placeholder="-25"></div>
+        <div class="input-group"><label data-t="l5">Макс. температура (°C)</label><input type="number" id="t_max" step="any" placeholder="60"></div>
+        <div class="input-group"><label data-t="l6">Макс. предел MPPT (В)</label><input type="number" id="v_mppt_max" step="any" placeholder="1000"></div>
+        <div class="input-group"><label data-t="l7">Мин. предел MPPT (В)</label><input type="number" id="v_mppt_min" step="any" placeholder="160"></div>
+    </div>
+
+    <button onclick="calculateRange()" data-t="calc" class="calc-btn">Рассчитать</button>
+
+    <div class="result" id="result"></div>
+    <button id="copyBtn" class="copy-btn" style="display:none;" data-t="copyBtn"></button>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
