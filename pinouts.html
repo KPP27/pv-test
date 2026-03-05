@@ -7,21 +7,31 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="container">
-        <div class="header-top">
-            <a href="index.html" class="back-btn" id="backBtn">←</a>
-            <div class="lang-switch">
-                <button class="lang-btn" onclick="setLang('ru')" data-l="ru">RU</button>
-                <button class="lang-btn" onclick="setLang('ua')" data-l="ua">UA</button>
-                <button class="lang-btn" onclick="setLang('pl')" data-l="pl">PL</button>
-                <button class="lang-btn" onclick="setLang('en')" data-l="en">EN</button>
-            </div>
+
+<div id="zoomModal" class="modal" onclick="closeModal()">
+    <span style="position:absolute; top:20px; right:20px; color:white; font-size:40px;">&times;</span>
+    <img id="modalImg" src="">
+</div>
+
+<div class="container">
+    <div class="header-top">
+        <a href="index.html" class="back-btn" id="backBtn" data-t="back">← Назад</a>
+        <div class="lang-switch">
+            <button class="lang-btn" onclick="setLang('ru')" data-l="ru">RU</button>
+            <button class="lang-btn" onclick="setLang('ua')" data-l="ua">UA</button>
+            <button class="lang-btn" onclick="setLang('pl')" data-l="pl">PL</button>
+            <button class="lang-btn" onclick="setLang('en')" data-l="en">EN</button>
         </div>
-        <h2 data-t="m2_t">Распиновки BMS</h2>
-        <div id="accordion">
-            </div>
+    </div>
+
+    <div class="welcome">
+        <h1 data-t="m2_t">Распиновки BMS</h1>
+        <p data-t="m2_d">Схемы CAN / RS485 / RJ45</p>
     </div>
     
-    <script src="app.js"></script>
-    <script src="pinouts_data.js"></script> </body>
+    <div id="accordion"></div>
+</div>
+
+<script src="app.js"></script>
+</body>
 </html>
