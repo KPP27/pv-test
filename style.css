@@ -1,43 +1,69 @@
-:root { --bg: #f5f5f5; --card-bg: #ffffff; --accent: #2a8cff; --border: #ddd; --radius: 14px; }
+:root { 
+    --bg: #f8f9fa; 
+    --card-bg: #ffffff; 
+    --accent: #2a8cff; 
+    --border: #eef0f2; 
+    --radius: 16px; 
+    --text-main: #1a1a1b;
+    --text-muted: #70757a;
+}
+
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
 body { 
-    font-family: system-ui, -apple-system, sans-serif; 
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; 
     background: var(--bg); margin: 0; padding: 15px; 
     display: flex; justify-content: center; min-height: 100vh;
 }
+
 .container { 
     width: 100%; max-width: 480px; 
-    background: var(--card-bg); padding: 20px; 
+    background: var(--card-bg); padding: 24px; 
     border-radius: var(--radius); border: 1px solid var(--border);
-    box-shadow: 0 4px 20px rgba(0,0,0,0.08); height: fit-content;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.05); height: fit-content;
+    animation: fadeIn 0.3s ease;
 }
-.top-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-.back-btn { 
-    background: #eee; border: none; padding: 8px 14px; border-radius: 10px; 
-    font-size: 14px; font-weight: 600; cursor: pointer; color: #333; text-decoration: none;
-}
-.lang-switch { display: flex; gap: 4px; background: #eee; padding: 3px; border-radius: 10px; }
+
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+/* Навигация и заголовок */
+.header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; gap: 10px; }
+.logo-text { font-weight: 800; font-size: 20px; color: var(--text-main); letter-spacing: -0.8px; white-space: nowrap; }
+
+.lang-switch { display: flex; gap: 2px; background: #eee; padding: 2px; border-radius: 10px; }
 .lang-btn {
-    padding: 5px 8px; font-size: 11px; font-weight: bold; border-radius: 7px;
-    cursor: pointer; border: none; background: transparent; color: #666;
+    padding: 6px 8px; font-size: 10px; font-weight: bold; border-radius: 8px;
+    cursor: pointer; border: none; background: transparent; color: #666; transition: 0.2s;
 }
 .lang-btn.active { background: white; color: var(--accent); box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-h2 { margin: 0 0 20px 0; font-size: 1.2rem; text-align: left; color: #222; padding-left: 5px; }
+
+/* Элементы аккордеона и контента */
 .acc-item { border: 1px solid var(--border); border-radius: 12px; margin-bottom: 10px; overflow: hidden; background: #fff; }
 .acc-header { 
     padding: 14px 16px; cursor: pointer; background: #fafafa; 
     font-size: 14px; font-weight: 600; display: flex; align-items: center; gap: 10px; 
-    transition: 0.2s; user-select: none; text-align: left; justify-content: flex-start;
+    transition: 0.2s; user-select: none; text-align: left;
 }
 .acc-item.open { border-color: var(--accent); }
-.acc-item.open .acc-header { background: #fff; color: var(--accent); }
-.acc-content { display: none; padding: 10px; text-align: center; border-top: 1px solid #eee; }
+.acc-content { display: none; padding: 10px; text-align: center; border-top: 1px solid var(--border); }
 .acc-item.open .acc-content { display: block; }
-.svg-wrap { position: relative; width: 100%; background: white; border-radius: 8px; overflow: hidden; border: 1px solid #eee; cursor: zoom-in; }
-.img-overlay { width: 100%; height: auto; display: block; image-rendering: -webkit-optimize-contrast; }
-.hint-text { font-size: 12px; color: #8e8e93; margin-top: 10px; font-style: italic; }
+
+/* Зум и модальное окно */
 .modal {
     display: none; position: fixed; z-index: 10000; top: 0; left: 0; width: 100%; height: 100%;
     background: rgba(0,0,0,0.95); touch-action: none; overflow: hidden; justify-content: center; align-items: center;
 }
 #modalImg { max-width: 100%; max-height: 100%; will-change: transform; cursor: move; }
+
+/* Карточки меню (для index.html) */
+.main-grid { display: flex; flex-direction: column; gap: 12px; }
+.tool-card {
+    background: #fff; border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 16px; display: flex; align-items: center; gap: 15px;
+    cursor: pointer; transition: 0.2s; text-decoration: none;
+}
+.tool-card:active { transform: scale(0.98); background: #f9f9f9; }
+.tool-icon { font-size: 24px; width: 48px; height: 48px; background: #f0f7ff; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.tool-info { display: flex; flex-direction: column; }
+.tool-title { font-weight: 700; color: var(--text-main); font-size: 16px; }
+.tool-desc { font-size: 12px; color: var(--text-muted); margin-top: 2px; line-height: 1.3; }
